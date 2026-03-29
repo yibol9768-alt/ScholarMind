@@ -1,19 +1,20 @@
 """
-智能文献分析系统 - 基于AI大模型
-主界面：Streamlit应用
+ScholarMind - 智能文献分析系统
+Apple-inspired UI Design
 """
 
 import sys
 import os
-
 sys.path.insert(0, os.path.dirname(__file__))
 
 import json
+import re
 import streamlit as st
 import pandas as pd
 import numpy as np
 import networkx as nx
 import plotly.graph_objects as go
+import plotly.express as px
 
 from modules.data_collector import (
     search_arxiv, search_semantic_scholar, clean_and_standardize,
@@ -35,51 +36,361 @@ from modules.recommender import (
 from modules.visualizer import (
     plot_yearly_trend, plot_citation_trend, plot_topic_distribution,
     plot_topic_scatter, plot_keyword_bar, plot_author_stats,
-    plot_collaboration_network, plot_keyword_trend_heatmap,
-    plot_keyword_cloud_data,
+    plot_keyword_trend_heatmap, plot_keyword_cloud_data,
 )
 from config import MODEL_NAME
 
-# ============ 页面配置 ============
+# ============================================================
+#  Page Config
+# ============================================================
 st.set_page_config(
-    page_title="ScholarMind - 智能文献分析系统",
+    page_title="ScholarMind",
     page_icon="📚",
     layout="wide",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="collapsed",
 )
 
-# ============ 自定义样式 ============
+# ============================================================
+#  Apple-Inspired Theme CSS
+# ============================================================
 st.markdown("""
 <style>
-    .main-header {
-        font-size: 2.2rem;
-        font-weight: bold;
-        text-align: center;
-        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        padding: 1rem 0;
-    }
-    .stTabs [data-baseweb="tab-list"] { gap: 4px; }
-    .stTabs [data-baseweb="tab"] { padding: 8px 16px; border-radius: 8px; }
-    .paper-card {
-        border: 1px solid #e0e0e0;
-        border-radius: 8px;
-        padding: 12px;
-        margin: 8px 0;
-        background: #fafafa;
-    }
+/* ---- Import SF Pro fallback ---- */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* ---- Root variables ---- */
+:root {
+    --bg-primary: #ffffff;
+    --bg-secondary: #f5f5f7;
+    --bg-card: #ffffff;
+    --text-primary: #1d1d1f;
+    --text-secondary: #6e6e73;
+    --text-tertiary: #86868b;
+    --accent: #0071e3;
+    --accent-hover: #0077ed;
+    --border: #d2d2d7;
+    --border-light: #e8e8ed;
+    --radius-card: 18px;
+    --radius-btn: 980px;
+    --radius-input: 12px;
+    --shadow-card: 0 4px 24px rgba(0,0,0,0.06);
+    --shadow-hover: 0 8px 32px rgba(0,0,0,0.10);
+    --font: 'Inter', 'SF Pro Display', 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+    --transition: all 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+/* ---- Global ---- */
+html, body, [data-testid="stAppViewContainer"] {
+    font-family: var(--font) !important;
+    background-color: var(--bg-secondary) !important;
+    color: var(--text-primary);
+}
+[data-testid="stMain"] {
+    background-color: var(--bg-secondary) !important;
+}
+.main .block-container {
+    max-width: 1200px;
+    padding: 2rem 3rem 4rem;
+}
+
+/* ---- Hide Streamlit defaults ---- */
+#MainMenu, footer, header, [data-testid="stToolbar"] { display: none !important; }
+[data-testid="stSidebar"] {
+    background: var(--bg-primary);
+    border-right: 1px solid var(--border-light);
+}
+
+/* ---- Hero Header ---- */
+.hero {
+    text-align: center;
+    padding: 3rem 0 2rem;
+}
+.hero h1 {
+    font-size: 3rem;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    color: var(--text-primary);
+    margin: 0;
+    line-height: 1.1;
+}
+.hero p {
+    font-size: 1.25rem;
+    color: var(--text-secondary);
+    margin-top: 0.5rem;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+}
+
+/* ---- Cards ---- */
+.card {
+    background: var(--bg-card);
+    border-radius: var(--radius-card);
+    padding: 2rem;
+    box-shadow: var(--shadow-card);
+    border: 1px solid var(--border-light);
+    transition: var(--transition);
+    margin-bottom: 1.5rem;
+}
+.card:hover {
+    box-shadow: var(--shadow-hover);
+    transform: translateY(-2px);
+}
+.card-header {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    letter-spacing: -0.02em;
+    margin-bottom: 0.25rem;
+}
+.card-sub {
+    font-size: 0.9rem;
+    color: var(--text-tertiary);
+    margin-bottom: 1.5rem;
+}
+
+/* ---- Stat Pill ---- */
+.stat-row {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin: 1.5rem 0;
+}
+.stat-pill {
+    background: var(--bg-secondary);
+    border-radius: 14px;
+    padding: 1rem 1.5rem;
+    flex: 1;
+    min-width: 140px;
+    text-align: center;
+    border: 1px solid var(--border-light);
+}
+.stat-pill .num {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.02em;
+}
+.stat-pill .label {
+    font-size: 0.8rem;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-top: 0.25rem;
+}
+
+/* ---- Section title ---- */
+.section-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.02em;
+    margin: 3rem 0 0.5rem;
+}
+.section-sub {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    margin-bottom: 2rem;
+}
+
+/* ---- Paper card ---- */
+.paper-item {
+    background: var(--bg-card);
+    border-radius: 14px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 0.75rem;
+    border: 1px solid var(--border-light);
+    transition: var(--transition);
+}
+.paper-item:hover {
+    border-color: var(--accent);
+    box-shadow: 0 2px 12px rgba(0,113,227,0.08);
+}
+.paper-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    letter-spacing: -0.01em;
+    line-height: 1.4;
+}
+.paper-meta {
+    font-size: 0.8rem;
+    color: var(--text-tertiary);
+    margin-top: 0.4rem;
+}
+.paper-abstract {
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-top: 0.5rem;
+}
+
+/* ---- Tags ---- */
+.tag {
+    display: inline-block;
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    border-radius: 980px;
+    padding: 0.2rem 0.65rem;
+    font-size: 0.72rem;
+    font-weight: 500;
+    margin: 0.15rem 0.2rem;
+    border: 1px solid var(--border-light);
+}
+.tag-accent {
+    background: rgba(0,113,227,0.08);
+    color: var(--accent);
+    border-color: rgba(0,113,227,0.15);
+}
+
+/* ---- Streamlit overrides ---- */
+/* Tabs */
+[data-baseweb="tab-list"] {
+    background: var(--bg-primary);
+    border-radius: 14px;
+    padding: 4px;
+    gap: 4px !important;
+    border: 1px solid var(--border-light);
+    box-shadow: var(--shadow-card);
+}
+[data-baseweb="tab"] {
+    border-radius: 10px !important;
+    padding: 10px 20px !important;
+    font-weight: 500 !important;
+    font-size: 0.9rem !important;
+    color: var(--text-secondary) !important;
+    letter-spacing: -0.005em;
+}
+[aria-selected="true"][data-baseweb="tab"] {
+    background: var(--accent) !important;
+    color: #fff !important;
+}
+
+/* Buttons */
+.stButton > button {
+    border-radius: var(--radius-btn) !important;
+    padding: 0.55rem 1.5rem !important;
+    font-weight: 600 !important;
+    font-size: 0.88rem !important;
+    letter-spacing: -0.005em;
+    border: none !important;
+    transition: var(--transition) !important;
+}
+.stButton > button[data-testid="stBaseButton-primary"] {
+    background-color: var(--accent) !important;
+    color: #fff !important;
+}
+.stButton > button[data-testid="stBaseButton-primary"]:hover {
+    background-color: var(--accent-hover) !important;
+    transform: scale(1.02);
+}
+.stButton > button[data-testid="stBaseButton-secondary"] {
+    background: var(--bg-secondary) !important;
+    color: var(--text-primary) !important;
+    border: 1px solid var(--border) !important;
+}
+
+/* Inputs */
+[data-testid="stTextInput"] input,
+[data-testid="stNumberInput"] input,
+.stTextArea textarea,
+.stSelectbox > div > div {
+    border-radius: var(--radius-input) !important;
+    border-color: var(--border) !important;
+    font-family: var(--font) !important;
+    font-size: 0.9rem !important;
+}
+[data-testid="stTextInput"] input:focus,
+.stTextArea textarea:focus {
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 0 3px rgba(0,113,227,0.15) !important;
+}
+
+/* Expander */
+.streamlit-expanderHeader {
+    font-weight: 600 !important;
+    font-size: 0.95rem !important;
+    border-radius: 12px !important;
+}
+
+/* Metric */
+[data-testid="stMetricValue"] {
+    font-weight: 700 !important;
+    font-size: 1.8rem !important;
+    letter-spacing: -0.02em;
+}
+[data-testid="stMetricLabel"] {
+    color: var(--text-tertiary) !important;
+    font-size: 0.8rem !important;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+/* Divider */
+hr {
+    border: none !important;
+    border-top: 1px solid var(--border-light) !important;
+    margin: 2rem 0 !important;
+}
+
+/* Dataframe */
+[data-testid="stDataFrame"] {
+    border-radius: 14px !important;
+    overflow: hidden;
+    border: 1px solid var(--border-light) !important;
+}
+
+/* Chat */
+[data-testid="stChatMessage"] {
+    border-radius: 16px !important;
+    border: 1px solid var(--border-light) !important;
+    padding: 1rem 1.25rem !important;
+}
+
+/* Download buttons */
+.stDownloadButton > button {
+    border-radius: var(--radius-btn) !important;
+    border: 1px solid var(--border) !important;
+    background: var(--bg-primary) !important;
+    font-weight: 500 !important;
+}
+.stDownloadButton > button:hover {
+    background: var(--bg-secondary) !important;
+}
+
+/* Plotly charts - white background */
+.js-plotly-plot .plotly .main-svg {
+    border-radius: 14px;
+}
+
+/* Toast */
+[data-testid="stToast"] {
+    border-radius: 14px !important;
+}
+
+/* Sidebar */
+[data-testid="stSidebar"] [data-testid="stMarkdown"] {
+    font-size: 0.88rem;
+}
 </style>
 """, unsafe_allow_html=True)
 
-st.markdown('<p class="main-header">📚 ScholarMind 智能文献分析系统</p>', unsafe_allow_html=True)
-st.markdown('<p style="text-align:center;color:gray;">基于AI大模型的学术文献智能分析、知识挖掘与可视化平台</p>', unsafe_allow_html=True)
+# ============================================================
+#  Hero Header
+# ============================================================
+st.markdown("""
+<div class="hero">
+    <h1>ScholarMind</h1>
+    <p>AI-Powered Academic Literature Analysis</p>
+</div>
+""", unsafe_allow_html=True)
 
-# ============ Helper ============
+# ============================================================
+#  Helpers
+# ============================================================
 NOTES_PATH = os.path.join(os.path.dirname(__file__), "data", "notes.json")
 
 
-def load_notes() -> dict:
+def load_notes():
     if os.path.exists(NOTES_PATH):
         try:
             with open(NOTES_PATH, "r", encoding="utf-8") as f:
@@ -89,24 +400,22 @@ def load_notes() -> dict:
     return {}
 
 
-def save_notes(notes: dict):
+def save_notes(notes):
     os.makedirs(os.path.dirname(NOTES_PATH), exist_ok=True)
     with open(NOTES_PATH, "w", encoding="utf-8") as f:
         json.dump(notes, f, ensure_ascii=False, indent=2)
 
 
-def format_date(d):
-    """格式化日期显示"""
+def fmt_date(d):
     if pd.isna(d):
-        return "N/A"
+        return ""
     try:
         return pd.Timestamp(d).strftime("%Y-%m-%d")
     except Exception:
         return str(d)
 
 
-def generate_bibtex(df: pd.DataFrame) -> str:
-    """生成BibTeX格式"""
+def generate_bibtex(df):
     entries = []
     for i, row in df.iterrows():
         authors = row.get("authors", [])
@@ -114,23 +423,77 @@ def generate_bibtex(df: pd.DataFrame) -> str:
             author_str = " and ".join(authors)
         else:
             author_str = str(authors)
-        title = row.get("title", "")
-        year = row.get("year", "")
-        doi = row.get("doi", "")
-        # 生成cite key
         first_author = authors[0].split()[-1] if isinstance(authors, list) and authors else "unknown"
-        key = f"{first_author}{int(year) if pd.notna(year) else 'xxxx'}_{i}"
-        entry = f"""@article{{{key},
-  title = {{{title}}},
-  author = {{{author_str}}},
-  year = {{{int(year) if pd.notna(year) else ''}}},
-  doi = {{{doi}}},
-}}"""
+        year = int(row["year"]) if pd.notna(row.get("year")) else "xxxx"
+        key = f"{first_author}{year}_{i}"
+        entry = f"@article{{{key},\n  title = {{{row.get('title', '')}}},\n  author = {{{author_str}}},\n  year = {{{year}}},\n  doi = {{{row.get('doi', '')}}},\n}}"
         entries.append(entry)
     return "\n\n".join(entries)
 
 
-# ============ 初始化Session State ============
+def render_stat_pills(stats: list[tuple]):
+    """Render Apple-style stat pills. stats = [(value, label), ...]"""
+    pills = ""
+    for val, label in stats:
+        pills += f'<div class="stat-pill"><div class="num">{val}</div><div class="label">{label}</div></div>'
+    st.markdown(f'<div class="stat-row">{pills}</div>', unsafe_allow_html=True)
+
+
+def render_paper_card(paper, show_abstract=True):
+    """Render a paper in Apple card style"""
+    title = paper.get("title", "")
+    authors = paper.get("authors", [])
+    if isinstance(authors, list):
+        authors_str = ", ".join(authors[:4])
+        if len(authors) > 4:
+            authors_str += f" +{len(authors)-4}"
+    else:
+        authors_str = str(authors)
+    date = fmt_date(paper.get("published"))
+    cites = int(paper.get("citation_count", 0))
+    source = paper.get("source", "")
+
+    keywords = paper.get("keywords", [])
+    tags_html = ""
+    if isinstance(keywords, list):
+        for kw in keywords[:5]:
+            tags_html += f'<span class="tag">{kw}</span>'
+
+    abstract_html = ""
+    if show_abstract:
+        abstract = str(paper.get("abstract", ""))[:250]
+        if abstract:
+            abstract_html = f'<div class="paper-abstract">{abstract}...</div>'
+
+    meta_parts = [f for f in [authors_str, date, f"{cites} citations" if cites else "", source] if f]
+
+    return f"""<div class="paper-item">
+        <div class="paper-title">{title}</div>
+        <div class="paper-meta">{" · ".join(meta_parts)}</div>
+        {abstract_html}
+        <div style="margin-top:0.5rem">{tags_html}</div>
+    </div>"""
+
+
+def apple_plotly_layout(fig, title="", height=420):
+    """Apply Apple-style to plotly figures"""
+    fig.update_layout(
+        title=dict(text=title, font=dict(size=18, family="Inter, SF Pro Display, sans-serif", color="#1d1d1f"), x=0, y=0.97),
+        font=dict(family="Inter, SF Pro Display, sans-serif", color="#6e6e73", size=12),
+        plot_bgcolor="#ffffff",
+        paper_bgcolor="#ffffff",
+        height=height,
+        margin=dict(l=40, r=20, t=50, b=40),
+        xaxis=dict(gridcolor="#f0f0f0", zerolinecolor="#e8e8ed"),
+        yaxis=dict(gridcolor="#f0f0f0", zerolinecolor="#e8e8ed"),
+        colorway=["#0071e3", "#34c759", "#ff9500", "#af52de", "#ff3b30", "#5ac8fa", "#ffcc00", "#ff2d55"],
+    )
+    return fig
+
+
+# ============================================================
+#  Init Session State
+# ============================================================
 if "papers_df" not in st.session_state:
     st.session_state.papers_df = load_papers()
 if "user_profile" not in st.session_state:
@@ -140,871 +503,691 @@ if "topic_result" not in st.session_state:
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 
-# ============ 侧边栏 ============
-with st.sidebar:
-    st.header("🔧 系统设置")
-    data_source = st.selectbox("数据源", ["arXiv", "Semantic Scholar", "Both"])
+profile = st.session_state.user_profile
 
-    llm_client = get_llm_client()
-    if llm_client:
-        st.success("✅ LLM已连接")
-    else:
-        st.warning("⚠️ LLM未配置 (TF-IDF替代)")
-        st.caption("在.env中配置OPENAI_API_KEY")
+# ============================================================
+#  Quick Stats Bar
+# ============================================================
+df_all = st.session_state.papers_df
+if not df_all.empty:
+    unique_authors = set()
+    for a in df_all["authors"]:
+        if isinstance(a, list):
+            unique_authors.update(a)
+    total_cites = int(df_all["citation_count"].sum()) if "citation_count" in df_all.columns else 0
+    render_stat_pills([
+        (len(df_all), "Papers"),
+        (len(unique_authors), "Authors"),
+        (total_cites, "Citations"),
+        (len(profile.get("liked_papers", [])), "Saved"),
+    ])
 
-    st.divider()
-    st.header("👤 用户画像")
-    profile = st.session_state.user_profile
-    if profile["interests"]:
-        st.write("**研究兴趣：**")
-        st.write(", ".join(profile["interests"][:10]))
-
-    col_s1, col_s2 = st.columns(2)
-    with col_s1:
-        st.metric("已读", len(profile.get("read_papers", [])))
-    with col_s2:
-        st.metric("收藏", len(profile.get("liked_papers", [])))
-
-    new_interest = st.text_input("添加研究兴趣")
-    if st.button("添加") and new_interest:
-        update_user_interests(profile, [new_interest])
-        st.session_state.user_profile = profile
-        st.rerun()
-
-    st.divider()
-    if not st.session_state.papers_df.empty:
-        st.header("📊 数据概览")
-        df_sidebar = st.session_state.papers_df
-        st.metric("总文献数", len(df_sidebar))
-        if "year" in df_sidebar.columns:
-            valid_years = df_sidebar["year"].dropna()
-            if len(valid_years) > 0:
-                st.metric("时间跨度", f"{int(valid_years.min())}-{int(valid_years.max())}")
-        if "citation_count" in df_sidebar.columns:
-            st.metric("总引用", int(df_sidebar["citation_count"].sum()))
-
-# ============ 主页面标签页 ============
+# ============================================================
+#  Tabs
+# ============================================================
 tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
-    "🔍 文献检索", "📊 主题与趋势", "🌐 知识图谱",
-    "💡 智能推荐", "🤖 AI助手", "📋 文献管理"
+    "Search", "Topics & Trends", "Knowledge Graph",
+    "Recommend", "AI Assistant", "Library"
 ])
 
-
-# ============ Tab 1: 文献检索 ============
+# ============================================================
+#  TAB 1 — Search
+# ============================================================
 with tab1:
-    st.header("🔍 文献数据收集与检索")
+    st.markdown('<div class="card"><div class="card-header">Discover Research</div><div class="card-sub">Search millions of papers from arXiv and Semantic Scholar</div>', unsafe_allow_html=True)
 
-    col1, col2, col3 = st.columns([3, 1, 1])
+    col1, col2, col3 = st.columns([5, 1, 1])
     with col1:
-        query = st.text_input("输入搜索关键词", placeholder="e.g., large language model, transformer")
+        query = st.text_input("Search", placeholder="e.g. large language model, transformer, diffusion model...", label_visibility="collapsed")
     with col2:
-        max_results = st.number_input("最大结果数", 10, 200, 50, step=10)
+        max_results = st.number_input("Max", 10, 200, 30, step=10, label_visibility="collapsed")
     with col3:
-        sort_option = st.selectbox("排序", ["relevance", "date"])
+        data_source = st.selectbox("Source", ["Both", "arXiv", "Semantic Scholar"], label_visibility="collapsed")
 
-    col_btn1, col_btn2 = st.columns([1, 1])
-    with col_btn1:
-        search_clicked = st.button("🚀 开始检索", type="primary", use_container_width=True)
-    with col_btn2:
-        use_llm_extract = st.checkbox("使用LLM增强提取", value=False,
-                                       help="使用大模型提取关键词、研究方法等（需配置API）")
+    scol1, scol2, scol3 = st.columns([2, 1, 1])
+    with scol1:
+        search_clicked = st.button("Search Papers", type="primary", use_container_width=True)
+    with scol2:
+        sort_option = st.selectbox("Sort by", ["relevance", "date"], label_visibility="collapsed")
+    with scol3:
+        use_llm = st.checkbox("LLM Extract", value=False, help="Use AI to extract richer metadata")
 
-    if search_clicked:
-        if query:
-            with st.spinner("正在检索文献数据..."):
-                papers = []
-                errors = []
-                if data_source in ["arXiv", "Both"]:
-                    arxiv_papers = search_arxiv(query, max_results, sort_option)
-                    if arxiv_papers:
-                        papers.extend(arxiv_papers)
-                        st.toast(f"arXiv: {len(arxiv_papers)} 篇")
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    if search_clicked and query:
+        with st.spinner("Searching..."):
+            papers = []
+            if data_source in ["arXiv", "Both"]:
+                ap = search_arxiv(query, max_results, sort_option)
+                papers.extend(ap)
+                if ap:
+                    st.toast(f"arXiv: {len(ap)} papers")
+            if data_source in ["Semantic Scholar", "Both"]:
+                sp = search_semantic_scholar(query, max_results)
+                papers.extend(sp)
+                if sp:
+                    st.toast(f"Semantic Scholar: {len(sp)} papers")
+
+            if papers:
+                df = clean_and_standardize(papers)
+                try:
+                    llm_client = get_llm_client()
+                    if use_llm and llm_client:
+                        with st.spinner("AI extracting metadata..."):
+                            enriched = batch_extract_info_llm(df.to_dict("records"))
+                            df = pd.DataFrame(enriched)
+                            df["published"] = pd.to_datetime(df["published"], errors="coerce")
+                            df["year"] = df["published"].dt.year
                     else:
-                        errors.append("arXiv检索失败或无结果")
+                        kw_dict = extract_keywords_tfidf(df)
+                        for i, row in df.iterrows():
+                            if row["title"] in kw_dict:
+                                df.at[i, "keywords"] = kw_dict[row["title"]]
+                except Exception as e:
+                    st.warning(f"Keyword extraction issue: {e}")
 
-                if data_source in ["Semantic Scholar", "Both"]:
-                    s2_papers = search_semantic_scholar(query, max_results)
-                    if s2_papers:
-                        papers.extend(s2_papers)
-                        st.toast(f"Semantic Scholar: {len(s2_papers)} 篇")
-                    else:
-                        errors.append("Semantic Scholar检索失败或无结果")
+                st.session_state.papers_df = df
+                st.session_state.topic_result = None
+                save_papers(df)
+                add_search_history(profile, query)
+                st.success(f"Found {len(df)} papers")
+                st.rerun()
+            else:
+                st.error("No papers found. Try different keywords or check your network connection.")
 
-                if errors:
-                    for err in errors:
-                        st.warning(err)
-
-                if papers:
-                    df = clean_and_standardize(papers)
-
-                    # 关键词提取
-                    try:
-                        if use_llm_extract and llm_client:
-                            with st.spinner("LLM正在提取关键信息..."):
-                                paper_dicts = df.to_dict("records")
-                                enriched = batch_extract_info_llm(paper_dicts)
-                                df = pd.DataFrame(enriched)
-                                df["published"] = pd.to_datetime(df["published"], errors="coerce")
-                                df["year"] = df["published"].dt.year
-                        else:
-                            kw_dict = extract_keywords_tfidf(df)
-                            for i, row in df.iterrows():
-                                if row["title"] in kw_dict:
-                                    df.at[i, "keywords"] = kw_dict[row["title"]]
-                    except Exception as e:
-                        st.warning(f"关键词提取出错: {e}，使用原始关键词")
-
-                    st.session_state.papers_df = df
-                    st.session_state.topic_result = None  # 清除旧主题
-                    save_papers(df)
-                    add_search_history(profile, query)
-                    st.session_state.user_profile = profile
-                    st.success(f"✅ 共获取并处理 {len(df)} 篇文献")
-                else:
-                    st.error("未找到相关文献，请调整搜索词")
-        else:
-            st.warning("请输入搜索关键词")
-
-    # 展示检索结果
+    # Results
     df = st.session_state.papers_df
     if not df.empty:
-        st.subheader(f"📄 文献列表 ({len(df)} 篇)")
+        # Filters
+        st.markdown('<p class="section-title">Results</p>', unsafe_allow_html=True)
 
-        # 过滤选项
-        col1, col2 = st.columns(2)
+        fcol1, fcol2 = st.columns([2, 1])
+        with fcol1:
+            title_filter = st.text_input("Filter by title", placeholder="Type to filter...", label_visibility="collapsed")
         years = []
         year_range = None
-        with col1:
+        with fcol2:
             if "year" in df.columns:
                 years = sorted(df["year"].dropna().unique())
                 if len(years) >= 2:
-                    year_range = st.slider("年份筛选",
-                                           int(min(years)), int(max(years)),
-                                           (int(min(years)), int(max(years))))
-                elif len(years) == 1:
-                    st.info(f"全部为 {int(years[0])} 年")
-        with col2:
-            title_filter = st.text_input("标题关键词过滤")
+                    year_range = st.slider("Year range", int(min(years)), int(max(years)),
+                                           (int(min(years)), int(max(years))), label_visibility="collapsed")
 
         filtered_df = df.copy()
         if year_range and len(years) >= 2:
-            filtered_df = filtered_df[
-                (filtered_df["year"] >= year_range[0]) & (filtered_df["year"] <= year_range[1])
-            ]
+            filtered_df = filtered_df[(filtered_df["year"] >= year_range[0]) & (filtered_df["year"] <= year_range[1])]
         if title_filter:
-            filtered_df = filtered_df[
-                filtered_df["title"].str.contains(title_filter, case=False, na=False)
-            ]
+            filtered_df = filtered_df[filtered_df["title"].str.contains(title_filter, case=False, na=False)]
 
-        # 展示表格
-        display_cols = ["title", "authors", "published", "source", "citation_count"]
-        available_cols = [c for c in display_cols if c in filtered_df.columns]
-        show_df = filtered_df[available_cols].copy()
-        if "published" in show_df.columns:
-            show_df["published"] = show_df["published"].apply(format_date)
+        # Paper list
+        for _, paper in filtered_df.head(30).iterrows():
+            st.markdown(render_paper_card(paper), unsafe_allow_html=True)
 
-        st.dataframe(show_df.reset_index(drop=True), use_container_width=True, height=400)
+        if len(filtered_df) > 30:
+            st.info(f"Showing 30 of {len(filtered_df)} papers. Use filters to narrow down.")
 
-        # 论文详情
-        st.subheader("📖 论文详情")
-        paper_titles = filtered_df["title"].tolist()
-        selected_title = st.selectbox("选择论文查看详情", paper_titles)
+        # Paper detail
+        st.markdown('<p class="section-title">Paper Detail</p>', unsafe_allow_html=True)
+        selected_title = st.selectbox("Select a paper", filtered_df["title"].tolist(), label_visibility="collapsed")
 
         if selected_title:
             paper = filtered_df[filtered_df["title"] == selected_title].iloc[0]
-            col1, col2 = st.columns([2, 1])
-            with col1:
-                st.markdown(f"### {paper['title']}")
+
+            st.markdown(f"""<div class="card">
+                <div class="card-header">{paper['title']}</div>
+            """, unsafe_allow_html=True)
+
+            dcol1, dcol2 = st.columns([3, 1])
+            with dcol1:
                 authors = paper.get("authors", [])
                 if isinstance(authors, list):
-                    st.markdown(f"**作者：** {', '.join(authors)}")
-                st.markdown(f"**发表日期：** {format_date(paper.get('published'))}")
-                st.markdown(f"**来源：** {paper.get('source', 'N/A')}")
+                    st.markdown(f"**Authors:** {', '.join(authors)}")
+                st.markdown(f"**Date:** {fmt_date(paper.get('published'))} · **Source:** {paper.get('source', '')}")
                 if paper.get("doi"):
-                    st.markdown(f"**DOI：** {paper['doi']}")
+                    st.markdown(f"**DOI:** {paper['doi']}")
                 if paper.get("main_contribution"):
-                    st.markdown(f"**核心贡献：** {paper['main_contribution']}")
-                if paper.get("research_method"):
-                    st.markdown(f"**研究方法：** {paper['research_method']}")
-                if paper.get("research_field"):
-                    st.markdown(f"**研究领域：** {paper['research_field']}")
-                st.markdown("**摘要：**")
-                st.markdown(paper.get("abstract", "无摘要"))
-
-            with col2:
-                st.metric("引用次数", int(paper.get("citation_count", 0)))
+                    st.markdown(f"**Contribution:** {paper['main_contribution']}")
+                st.markdown(f"**Abstract:** {paper.get('abstract', 'N/A')}")
+            with dcol2:
+                st.metric("Citations", int(paper.get("citation_count", 0)))
                 keywords = paper.get("keywords", [])
                 if isinstance(keywords, list) and keywords:
-                    st.markdown("**关键词：**")
-                    for kw in keywords[:8]:
-                        st.markdown(f"` {kw} `")
+                    tags = "".join([f'<span class="tag tag-accent">{k}</span>' for k in keywords[:8]])
+                    st.markdown(f"**Keywords:**<br>{tags}", unsafe_allow_html=True)
                 if paper.get("pdf_url"):
-                    st.link_button("📄 查看原文", paper["pdf_url"])
+                    st.link_button("View Paper", paper["pdf_url"], use_container_width=True)
 
-                bcol1, bcol2 = st.columns(2)
-                with bcol1:
-                    if st.button("📖 标记已读", key="detail_read"):
+                bc1, bc2 = st.columns(2)
+                with bc1:
+                    if st.button("Read", key="d_read", use_container_width=True):
                         mark_paper_read(profile, selected_title)
-                        st.toast("已标记为已读")
+                        st.toast("Marked as read")
                         st.rerun()
-                with bcol2:
-                    if st.button("❤️ 收藏", key="detail_like"):
+                with bc2:
+                    if st.button("Save", key="d_save", use_container_width=True):
                         mark_paper_liked(profile, selected_title)
                         kws = paper.get("keywords", [])
                         if isinstance(kws, list):
                             update_user_interests(profile, kws)
-                        st.toast("已收藏")
+                        st.toast("Saved!")
                         st.rerun()
 
-            # ===== 引用/参考文献探索 =====
-            st.divider()
-            st.subheader("🔗 引用关系探索")
-            ref_col1, ref_col2 = st.columns(2)
+            st.markdown('</div>', unsafe_allow_html=True)
 
-            with ref_col1:
-                if st.button("📥 查看引用该论文的文献 (Citations)", use_container_width=True):
-                    with st.spinner("正在获取引用数据..."):
-                        paper_id = paper.get("id", "")
-                        citations = get_paper_citations(paper_id)
-                        if citations:
-                            st.session_state.current_citations = citations
-                            st.toast(f"找到 {len(citations)} 篇引用文献")
-                        else:
-                            st.info("未找到引用信息（可能需要Semantic Scholar ID）")
+            # Citations
+            st.markdown('<p class="section-title" style="font-size:1.3rem">Citation Explorer</p>', unsafe_allow_html=True)
+            cc1, cc2 = st.columns(2)
+            with cc1:
+                if st.button("Cited By", use_container_width=True):
+                    with st.spinner("Loading citations..."):
+                        cits = get_paper_citations(paper.get("id", ""))
+                        st.session_state.current_citations = cits if cits else []
+                        if not cits:
+                            st.info("No citation data found")
+            with cc2:
+                if st.button("References", use_container_width=True):
+                    with st.spinner("Loading references..."):
+                        refs = get_paper_references(paper.get("id", ""))
+                        st.session_state.current_references = refs if refs else []
+                        if not refs:
+                            st.info("No reference data found")
 
-            with ref_col2:
-                if st.button("📤 查看参考文献 (References)", use_container_width=True):
-                    with st.spinner("正在获取参考文献..."):
-                        paper_id = paper.get("id", "")
-                        references = get_paper_references(paper_id)
-                        if references:
-                            st.session_state.current_references = references
-                            st.toast(f"找到 {len(references)} 篇参考文献")
-                        else:
-                            st.info("未找到参考文献信息")
-
-            # 展示引用
             if st.session_state.get("current_citations"):
-                with st.expander(f"📥 引用该论文的文献 ({len(st.session_state.current_citations)} 篇)", expanded=True):
-                    cit_df = pd.DataFrame(st.session_state.current_citations)
-                    st.dataframe(cit_df[["title", "year", "citation_count"]].head(20),
-                                 use_container_width=True)
+                cdf = pd.DataFrame(st.session_state.current_citations)
+                st.markdown(f"**{len(cdf)} papers cite this work:**")
+                for _, c in cdf.head(10).iterrows():
+                    st.markdown(f"""<div class="paper-item"><div class="paper-title">{c['title']}</div>
+                        <div class="paper-meta">{c.get('year', '')} · {c.get('citation_count', 0)} citations</div></div>""",
+                        unsafe_allow_html=True)
 
             if st.session_state.get("current_references"):
-                with st.expander(f"📤 参考文献 ({len(st.session_state.current_references)} 篇)", expanded=True):
-                    ref_df = pd.DataFrame(st.session_state.current_references)
-                    st.dataframe(ref_df[["title", "year", "citation_count"]].head(20),
-                                 use_container_width=True)
+                rdf = pd.DataFrame(st.session_state.current_references)
+                st.markdown(f"**{len(rdf)} references:**")
+                for _, r in rdf.head(10).iterrows():
+                    st.markdown(f"""<div class="paper-item"><div class="paper-title">{r['title']}</div>
+                        <div class="paper-meta">{r.get('year', '')} · {r.get('citation_count', 0)} citations</div></div>""",
+                        unsafe_allow_html=True)
 
 
-# ============ Tab 2: 主题与趋势分析 ============
+# ============================================================
+#  TAB 2 — Topics & Trends
+# ============================================================
 with tab2:
-    st.header("📊 主题建模与趋势分析")
-
     df = st.session_state.papers_df
     if df.empty:
-        st.info("请先在「文献检索」中搜索文献")
+        st.markdown('<div class="card" style="text-align:center;padding:4rem"><div class="card-header">No Data Yet</div><div class="card-sub">Search for papers first to see topic analysis</div></div>', unsafe_allow_html=True)
     else:
-        # 趋势分析
-        st.subheader("📈 发表趋势")
+        # Trends
+        st.markdown('<p class="section-title">Publishing Trends</p>', unsafe_allow_html=True)
         trends = trend_analysis(df)
-        if trends:
-            col1, col2, col3, col4 = st.columns(4)
-            with col1:
-                st.metric("总论文数", trends["total_papers"])
-            with col2:
-                yr = trends.get("year_range", (0, 0))
-                st.metric("时间范围", f"{yr[0]}-{yr[1]}")
-            with col3:
-                if trends.get("top_categories"):
-                    st.metric("热门领域", trends["top_categories"][0][0])
-            with col4:
-                if "citation_count" in df.columns:
-                    st.metric("平均引用", f"{df['citation_count'].mean():.1f}")
-
-            trend_col1, trend_col2 = st.columns(2)
-            with trend_col1:
-                if trends.get("yearly_counts"):
-                    st.plotly_chart(plot_yearly_trend(trends["yearly_counts"]),
-                                   use_container_width=True)
-            with trend_col2:
+        if trends and trends.get("yearly_counts"):
+            tcol1, tcol2 = st.columns(2)
+            with tcol1:
+                fig = plot_yearly_trend(trends["yearly_counts"])
+                apple_plotly_layout(fig, "Papers per Year")
+                st.plotly_chart(fig, use_container_width=True)
+            with tcol2:
                 if trends.get("yearly_citations"):
-                    st.plotly_chart(plot_citation_trend(trends["yearly_citations"]),
-                                   use_container_width=True)
+                    fig2 = plot_citation_trend(trends["yearly_citations"])
+                    apple_plotly_layout(fig2, "Citation Trends")
+                    st.plotly_chart(fig2, use_container_width=True)
 
         st.divider()
 
-        # 主题建模
-        st.subheader("🎯 主题建模")
-        col1, col2 = st.columns(2)
-        with col1:
-            method = st.selectbox("建模方法", ["LDA", "TF-IDF + KMeans"])
-        with col2:
-            n_topics = st.slider("主题数量", 2, 10, 5)
+        # Topic Modeling
+        st.markdown('<p class="section-title">Topic Modeling</p><p class="section-sub">Discover hidden themes in the literature</p>', unsafe_allow_html=True)
 
-        if st.button("🔬 开始主题分析", type="primary"):
-            with st.spinner("正在进行主题建模..."):
-                try:
-                    if method == "LDA":
-                        result = topic_modeling_lda(df, n_topics)
-                    else:
-                        result = topic_modeling_tfidf_kmeans(df, n_topics)
-                    st.session_state.topic_result = result
-                except Exception as e:
-                    st.error(f"主题建模失败: {e}")
+        st.markdown('<div class="card">', unsafe_allow_html=True)
+        tmcol1, tmcol2, tmcol3 = st.columns([2, 1, 1])
+        with tmcol1:
+            method = st.selectbox("Method", ["LDA", "TF-IDF + KMeans"], label_visibility="collapsed")
+        with tmcol2:
+            n_topics = st.slider("Topics", 2, 10, 5, label_visibility="collapsed")
+        with tmcol3:
+            if st.button("Analyze Topics", type="primary", use_container_width=True):
+                with st.spinner("Modeling topics..."):
+                    try:
+                        if method == "LDA":
+                            result = topic_modeling_lda(df, n_topics)
+                        else:
+                            result = topic_modeling_tfidf_kmeans(df, n_topics)
+                        st.session_state.topic_result = result
+                    except Exception as e:
+                        st.error(f"Topic modeling failed: {e}")
+        st.markdown('</div>', unsafe_allow_html=True)
 
         if st.session_state.topic_result:
             result = st.session_state.topic_result
             topics = result["topics"]
 
-            # 主题分布饼图 + 散点图
-            topic_col1, topic_col2 = st.columns(2)
-            with topic_col1:
-                st.plotly_chart(plot_topic_distribution(topics), use_container_width=True)
-            with topic_col2:
+            tcol1, tcol2 = st.columns(2)
+            with tcol1:
+                fig = plot_topic_distribution(topics)
+                apple_plotly_layout(fig, "Topic Distribution", 400)
+                st.plotly_chart(fig, use_container_width=True)
+            with tcol2:
                 if "df" in result:
-                    st.plotly_chart(plot_topic_scatter(result["df"]), use_container_width=True)
+                    fig = plot_topic_scatter(result["df"])
+                    apple_plotly_layout(fig, "Topic Clusters", 400)
+                    st.plotly_chart(fig, use_container_width=True)
 
-            # 主题关键词
             for topic_name, topic_data in topics.items():
-                with st.expander(f"📌 {topic_name}: {', '.join(topic_data['top_words'][:5])}"):
-                    st.write(", ".join(topic_data["top_words"]))
+                words = topic_data["top_words"]
+                tags = " ".join([f'<span class="tag tag-accent">{w}</span>' for w in words])
+                st.markdown(f'<div class="paper-item"><div class="paper-title">{topic_name}</div><div style="margin-top:0.5rem">{tags}</div></div>', unsafe_allow_html=True)
 
         st.divider()
 
-        # 关键词分析 - 词云 + 柱状图 + 热力图
-        st.subheader("🔑 关键词分析")
-        kw_col1, kw_col2 = st.columns(2)
-        with kw_col1:
-            st.plotly_chart(plot_keyword_bar(df), use_container_width=True)
-        with kw_col2:
-            # 词云
-            cloud_data = plot_keyword_cloud_data(df)
-            if cloud_data:
-                try:
-                    from streamlit_echarts import st_echarts
-                    wordcloud_option = {
-                        "tooltip": {},
-                        "series": [{
-                            "type": "wordCloud",
-                            "gridSize": 8,
-                            "sizeRange": [12, 60],
-                            "rotationRange": [-45, 45],
-                            "shape": "circle",
-                            "textStyle": {
-                                "fontFamily": "sans-serif",
-                                "fontWeight": "bold",
-                            },
-                            "data": cloud_data[:40],
-                        }]
-                    }
-                    st_echarts(wordcloud_option, height="400px")
-                except ImportError:
-                    # fallback: 用matplotlib词云
+        # Keywords
+        st.markdown('<p class="section-title">Keyword Analysis</p>', unsafe_allow_html=True)
+        kcol1, kcol2 = st.columns(2)
+        with kcol1:
+            fig = plot_keyword_bar(df)
+            apple_plotly_layout(fig, "Top Keywords")
+            st.plotly_chart(fig, use_container_width=True)
+        with kcol2:
+            if trends and trends.get("keyword_trends"):
+                fig = plot_keyword_trend_heatmap(trends["keyword_trends"])
+                apple_plotly_layout(fig, "Keyword Heatmap")
+                st.plotly_chart(fig, use_container_width=True)
+            else:
+                # Wordcloud fallback
+                cloud_data = plot_keyword_cloud_data(df)
+                if cloud_data:
                     try:
                         from wordcloud import WordCloud
                         import matplotlib.pyplot as plt
                         freq = {d["name"]: d["value"] for d in cloud_data}
-                        wc = WordCloud(width=600, height=400, background_color="white").generate_from_frequencies(freq)
-                        fig_wc, ax_wc = plt.subplots(figsize=(8, 5))
-                        ax_wc.imshow(wc, interpolation="bilinear")
-                        ax_wc.axis("off")
+                        wc = WordCloud(width=600, height=400, background_color="white",
+                                       color_func=lambda *a, **kw: "#0071e3").generate_from_frequencies(freq)
+                        fig_wc, ax = plt.subplots(figsize=(8, 5))
+                        ax.imshow(wc, interpolation="bilinear")
+                        ax.axis("off")
+                        fig_wc.patch.set_facecolor("white")
                         st.pyplot(fig_wc)
                     except Exception:
-                        st.info("安装 streamlit-echarts 或 wordcloud 以显示词云")
+                        pass
 
-        if trends and trends.get("keyword_trends"):
-            st.plotly_chart(plot_keyword_trend_heatmap(trends["keyword_trends"]),
-                           use_container_width=True)
-
-        # 热点识别
-        st.subheader("🔥 热点识别")
+        # Hot topics
         hot = identify_hot_topics(df)
-        if hot:
-            st.markdown(f"**分析周期：** {hot.get('period', 'N/A')}")
-            if hot.get("hot_keywords"):
-                st.markdown("**热门关键词：**")
-                kw_text = " | ".join([f"**{k}** ({v})" for k, v in hot["hot_keywords"][:10]])
-                st.markdown(kw_text)
-            if hot.get("hot_papers"):
-                st.markdown("**高引用论文：**")
-                for p in hot["hot_papers"][:5]:
-                    authors = p.get("authors", [])
-                    if isinstance(authors, list):
-                        authors = ", ".join(authors[:3])
-                    st.markdown(f"- 📄 **{p['title']}** | {authors} | 引用: {p.get('citation_count', 0)}")
-        else:
-            st.info("数据不足以进行热点分析")
+        if hot and hot.get("hot_keywords"):
+            st.markdown(f'<p class="section-title">Hot Topics <span style="font-size:0.9rem;color:#6e6e73">({hot.get("period", "")})</span></p>', unsafe_allow_html=True)
+            tags = " ".join([f'<span class="tag tag-accent">{k} ({v})</span>' for k, v in hot["hot_keywords"][:15]])
+            st.markdown(f'<div class="card">{tags}</div>', unsafe_allow_html=True)
 
 
-# ============ Tab 3: 知识图谱 ============
+# ============================================================
+#  TAB 3 — Knowledge Graph
+# ============================================================
 with tab3:
-    st.header("🌐 知识图谱与网络分析")
-
     df = st.session_state.papers_df
     if df.empty:
-        st.info("请先在「文献检索」中搜索文献")
+        st.markdown('<div class="card" style="text-align:center;padding:4rem"><div class="card-header">No Data Yet</div><div class="card-sub">Search for papers first to build knowledge graphs</div></div>', unsafe_allow_html=True)
     else:
-        graph_type = st.selectbox("选择网络类型", [
-            "作者合作网络", "关键词共现网络", "论文-作者-关键词知识图谱"
-        ])
+        st.markdown('<p class="section-title">Knowledge Graph</p><p class="section-sub">Explore relationships between papers, authors, and keywords</p>', unsafe_allow_html=True)
 
-        if st.button("🔗 生成网络图", type="primary"):
-            with st.spinner("正在构建网络..."):
-                if graph_type == "作者合作网络":
-                    G = build_author_collaboration_network(df)
-                    st.session_state.current_graph = G
-                    st.session_state.graph_type = "collaboration"
-                elif graph_type == "论文-作者-关键词知识图谱":
-                    G = build_knowledge_graph(df)
-                    st.session_state.current_graph = G
-                    st.session_state.graph_type = "knowledge"
-                else:
-                    G = nx.Graph()
-                    for _, row in df.iterrows():
-                        kws = row.get("keywords", [])
-                        if isinstance(kws, str):
-                            kws = [k.strip() for k in kws.split(",")]
-                        if isinstance(kws, list):
-                            for i in range(len(kws)):
-                                for j in range(i + 1, len(kws)):
-                                    if kws[i] and kws[j]:
-                                        if G.has_edge(kws[i], kws[j]):
-                                            G[kws[i]][kws[j]]["weight"] += 1
-                                        else:
-                                            G.add_edge(kws[i], kws[j], weight=1)
-                    st.session_state.current_graph = G
-                    st.session_state.graph_type = "keyword"
+        st.markdown('<div class="card">', unsafe_allow_html=True)
+        gcol1, gcol2 = st.columns([2, 1])
+        with gcol1:
+            graph_type = st.selectbox("Network Type", ["Author Collaboration", "Keyword Co-occurrence", "Paper-Author-Keyword"], label_visibility="collapsed")
+        with gcol2:
+            if st.button("Build Graph", type="primary", use_container_width=True):
+                with st.spinner("Building network..."):
+                    if graph_type == "Author Collaboration":
+                        G = build_author_collaboration_network(df)
+                        st.session_state.current_graph = G
+                        st.session_state.graph_type = "collaboration"
+                    elif graph_type == "Paper-Author-Keyword":
+                        G = build_knowledge_graph(df)
+                        st.session_state.current_graph = G
+                        st.session_state.graph_type = "knowledge"
+                    else:
+                        G = nx.Graph()
+                        for _, row in df.iterrows():
+                            kws = row.get("keywords", [])
+                            if isinstance(kws, str):
+                                kws = [k.strip() for k in kws.split(",")]
+                            if isinstance(kws, list):
+                                for i in range(len(kws)):
+                                    for j in range(i + 1, len(kws)):
+                                        if kws[i] and kws[j]:
+                                            if G.has_edge(kws[i], kws[j]):
+                                                G[kws[i]][kws[j]]["weight"] += 1
+                                            else:
+                                                G.add_edge(kws[i], kws[j], weight=1)
+                        st.session_state.current_graph = G
+                        st.session_state.graph_type = "keyword"
+        st.markdown('</div>', unsafe_allow_html=True)
 
         if "current_graph" in st.session_state:
             G = st.session_state.current_graph
-            st.markdown(f"**节点数：** {G.number_of_nodes()} | **边数：** {G.number_of_edges()}")
+
+            render_stat_pills([
+                (G.number_of_nodes(), "Nodes"),
+                (G.number_of_edges(), "Edges"),
+                (f"{nx.density(G):.3f}", "Density"),
+                (nx.number_connected_components(G) if not nx.is_directed(G) and G.number_of_nodes() > 0 else "—", "Components"),
+            ])
 
             if G.number_of_nodes() > 0:
-                max_display = st.slider("最大显示节点数", 10, 200, 50)
+                max_display = st.slider("Display nodes", 10, min(200, G.number_of_nodes()), min(50, G.number_of_nodes()))
 
                 if G.number_of_nodes() > max_display:
-                    top_nodes = sorted(G.nodes, key=lambda n: G.degree(n), reverse=True)[:max_display]
-                    subG = G.subgraph(top_nodes)
+                    top_n = sorted(G.nodes, key=lambda n: G.degree(n), reverse=True)[:max_display]
+                    subG = G.subgraph(top_n)
                 else:
                     subG = G
 
-                # 尝试使用 streamlit-agraph
-                use_agraph = False
+                # Interactive graph with streamlit-agraph
                 try:
                     from streamlit_agraph import agraph, Node, Edge, Config
-                    use_agraph = True
-                except ImportError:
-                    pass
 
-                if use_agraph and subG.number_of_nodes() <= 100:
-                    # 交互式图谱
+                    color_map = {"paper": "#0071e3", "author": "#ff3b30", "keyword": "#34c759"}
                     nodes = []
                     edges = []
-                    color_map = {"paper": "#4A90D9", "author": "#E74C3C", "keyword": "#2ECC71"}
                     for node in subG.nodes:
                         ntype = subG.nodes[node].get("type", "")
-                        color = color_map.get(ntype, f"hsl({hash(node) % 360}, 60%, 50%)")
+                        color = color_map.get(ntype, "#86868b")
                         size = min(10 + subG.degree(node) * 3, 40)
-                        label = str(node)[:25]
-                        nodes.append(Node(id=str(node), label=label, size=size, color=color,
-                                         title=f"{node}\n度: {subG.degree(node)}"))
+                        nodes.append(Node(id=str(node), label=str(node)[:22], size=size, color=color,
+                                         font={"size": 10, "color": "#1d1d1f"},
+                                         title=f"{node}\nConnections: {subG.degree(node)}"))
                     for u, v, data in subG.edges(data=True):
-                        weight = data.get("weight", 1)
-                        edges.append(Edge(source=str(u), target=str(v), width=min(weight, 5)))
+                        edges.append(Edge(source=str(u), target=str(v),
+                                         width=min(data.get("weight", 1), 5),
+                                         color="#d2d2d7"))
 
-                    config = Config(
-                        width=800, height=600, directed=False,
-                        physics=True, hierarchical=False,
-                        nodeHighlightBehavior=True,
-                        highlightColor="#F7A7A6",
-                    )
+                    config = Config(width=800, height=550, directed=False, physics=True,
+                                    nodeHighlightBehavior=True, highlightColor="#0071e3",
+                                    collapsible=False,
+                                    node={"highlightStrokeColor": "#0071e3"})
                     agraph(nodes=nodes, edges=edges, config=config)
 
-                    # 图例
                     if st.session_state.get("graph_type") == "knowledge":
-                        st.markdown("**图例：** 🔵 论文 | 🔴 作者 | 🟢 关键词")
-                else:
+                        st.markdown('<div style="text-align:center;margin:1rem 0"><span class="tag" style="background:#0071e3;color:#fff">Paper</span> <span class="tag" style="background:#ff3b30;color:#fff">Author</span> <span class="tag" style="background:#34c759;color:#fff">Keyword</span></div>', unsafe_allow_html=True)
+                except ImportError:
                     # Plotly fallback
                     pos = nx.spring_layout(subG, seed=42, k=2/np.sqrt(max(subG.number_of_nodes(), 1)))
-
                     edge_x, edge_y = [], []
                     for u, v in subG.edges():
-                        x0, y0 = pos[u]
-                        x1, y1 = pos[v]
-                        edge_x.extend([x0, x1, None])
-                        edge_y.extend([y0, y1, None])
+                        x0, y0 = pos[u]; x1, y1 = pos[v]
+                        edge_x.extend([x0, x1, None]); edge_y.extend([y0, y1, None])
 
-                    edge_trace = go.Scatter(x=edge_x, y=edge_y, mode="lines",
-                                            line=dict(width=0.5, color="#888"), hoverinfo="none")
-
+                    fig = go.Figure()
+                    fig.add_trace(go.Scatter(x=edge_x, y=edge_y, mode="lines", line=dict(width=0.5, color="#d2d2d7"), hoverinfo="none"))
                     node_x = [pos[n][0] for n in subG.nodes()]
                     node_y = [pos[n][1] for n in subG.nodes()]
-                    node_text = list(subG.nodes())
-                    node_size = [min(5 + subG.degree(n) * 2, 30) for n in subG.nodes()]
-
-                    if st.session_state.get("graph_type") == "knowledge":
-                        cmap = {"paper": "blue", "author": "red", "keyword": "green"}
-                        node_color = [cmap.get(subG.nodes[n].get("type", ""), "gray") for n in subG.nodes()]
-                        showscale = False
-                    else:
-                        node_color = [subG.degree(n) for n in subG.nodes()]
-                        showscale = True
-
-                    node_trace = go.Scatter(
-                        x=node_x, y=node_y, mode="markers+text",
-                        text=[n[:20] for n in node_text], textposition="top center",
-                        textfont=dict(size=8),
-                        marker=dict(size=node_size, color=node_color,
-                                    colorscale="YlOrRd" if showscale else None,
-                                    showscale=showscale,
-                                    line=dict(width=1, color="white")),
-                        hovertext=node_text, hoverinfo="text",
-                    )
-
-                    fig = go.Figure(data=[edge_trace, node_trace])
-                    fig.update_layout(
-                        title=f"🌐 {graph_type}",
-                        showlegend=False,
-                        xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
-                        yaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
-                        height=600, template="plotly_white",
-                    )
+                    fig.add_trace(go.Scatter(x=node_x, y=node_y, mode="markers+text",
+                                             text=[str(n)[:18] for n in subG.nodes()], textposition="top center",
+                                             textfont=dict(size=8, color="#1d1d1f"),
+                                             marker=dict(size=[min(6+subG.degree(n)*2,28) for n in subG.nodes()],
+                                                         color=[subG.degree(n) for n in subG.nodes()],
+                                                         colorscale=[[0,"#d2d2d7"],[1,"#0071e3"]], showscale=False,
+                                                         line=dict(width=1, color="white")),
+                                             hovertext=list(subG.nodes()), hoverinfo="text"))
+                    apple_plotly_layout(fig, graph_type, 550)
+                    fig.update_layout(xaxis=dict(showgrid=False, showticklabels=False, zeroline=False),
+                                      yaxis=dict(showgrid=False, showticklabels=False, zeroline=False), showlegend=False)
                     st.plotly_chart(fig, use_container_width=True)
 
-                # 网络统计
-                st.subheader("📊 网络统计")
-                stat_col1, stat_col2, stat_col3 = st.columns(3)
-                with stat_col1:
-                    degrees = dict(subG.degree())
-                    top_deg = sorted(degrees.items(), key=lambda x: x[1], reverse=True)[:10]
-                    st.markdown("**核心节点 (度中心性)：**")
-                    for node, deg in top_deg:
-                        st.markdown(f"- {str(node)[:30]}: {deg}")
-                with stat_col2:
-                    st.metric("网络密度", f"{nx.density(subG):.4f}")
-                    if not nx.is_directed(subG):
-                        components = nx.number_connected_components(subG)
-                        st.metric("连通分量数", components)
-                with stat_col3:
-                    if subG.number_of_nodes() > 2:
-                        try:
-                            with st.spinner("计算介数中心性..."):
-                                betweenness = nx.betweenness_centrality(subG)
-                            top_between = sorted(betweenness.items(), key=lambda x: x[1], reverse=True)[:5]
-                            st.markdown("**桥梁节点 (介数中心性)：**")
-                            for node, bc in top_between:
-                                st.markdown(f"- {str(node)[:30]}: {bc:.3f}")
-                        except Exception:
-                            pass
+                # Top nodes
+                degrees = sorted(dict(subG.degree()).items(), key=lambda x: x[1], reverse=True)[:8]
+                st.markdown("**Key Nodes:**")
+                tags = " ".join([f'<span class="tag">{str(n)[:25]} ({d})</span>' for n, d in degrees])
+                st.markdown(tags, unsafe_allow_html=True)
 
+        # Author stats
         st.divider()
-        st.subheader("👨‍🔬 作者统计")
-        st.plotly_chart(plot_author_stats(df), use_container_width=True)
+        st.markdown('<p class="section-title" style="font-size:1.3rem">Top Authors</p>', unsafe_allow_html=True)
+        fig = plot_author_stats(df)
+        apple_plotly_layout(fig, "")
+        st.plotly_chart(fig, use_container_width=True)
 
 
-# ============ Tab 4: 智能推荐 ============
+# ============================================================
+#  TAB 4 — Recommendations
+# ============================================================
 with tab4:
-    st.header("💡 智能推荐与个性化服务")
-
     df = st.session_state.papers_df
-    profile = st.session_state.user_profile
-
     if df.empty:
-        st.info("请先在「文献检索」中搜索文献")
+        st.markdown('<div class="card" style="text-align:center;padding:4rem"><div class="card-header">No Data Yet</div><div class="card-sub">Search for papers to get personalized recommendations</div></div>', unsafe_allow_html=True)
     else:
-        st.subheader("🎯 个性化推荐")
-        if profile.get("interests"):
-            st.markdown(f"**当前研究兴趣：** {', '.join(profile['interests'][:10])}")
+        st.markdown('<p class="section-title">Recommended For You</p>', unsafe_allow_html=True)
 
-        if st.button("🔄 获取推荐", type="primary"):
-            with st.spinner("正在生成推荐..."):
+        if profile.get("interests"):
+            tags = " ".join([f'<span class="tag tag-accent">{k}</span>' for k in profile["interests"][:12]])
+            st.markdown(f'<div class="card"><div class="card-header" style="font-size:1rem">Your Interests</div><div style="margin-top:0.5rem">{tags}</div></div>', unsafe_allow_html=True)
+
+        if st.button("Get Recommendations", type="primary", use_container_width=True):
+            with st.spinner("Computing recommendations..."):
                 recommended = content_based_recommend(df, profile, top_n=10)
                 st.session_state.recommended_papers = recommended
 
         if "recommended_papers" in st.session_state:
-            rec_df = st.session_state.recommended_papers
-            for i, (_, paper) in enumerate(rec_df.iterrows()):
-                score = paper.get('relevance_score', 0)
-                score_str = f" (相关度: {score:.2f})" if score > 0 else ""
-                with st.expander(f"📄 {i+1}. {paper['title']}{score_str}"):
-                    authors = paper.get("authors", [])
-                    if isinstance(authors, list):
-                        st.markdown(f"**作者：** {', '.join(authors[:5])}")
-                    st.markdown(f"**发表日期：** {format_date(paper.get('published'))}")
-                    st.markdown(f"**摘要：** {str(paper.get('abstract', ''))[:300]}...")
-
-                    col1, col2 = st.columns(2)
-                    with col1:
-                        if st.button("📖 标记已读", key=f"rec_read_{i}"):
-                            mark_paper_read(profile, paper["title"])
-                            st.toast("已标记已读")
-                            st.rerun()
-                    with col2:
-                        if st.button("❤️ 收藏", key=f"rec_like_{i}"):
-                            mark_paper_liked(profile, paper["title"])
-                            st.toast("已收藏")
-                            st.rerun()
+            for _, paper in st.session_state.recommended_papers.iterrows():
+                score = paper.get("relevance_score", 0)
+                score_html = f'<span class="tag tag-accent">Relevance: {score:.0%}</span>' if score > 0 else ""
+                st.markdown(f"""<div class="paper-item">
+                    <div style="display:flex;justify-content:space-between;align-items:start">
+                        <div class="paper-title">{paper['title']}</div>{score_html}
+                    </div>
+                    <div class="paper-meta">{', '.join(paper['authors'][:3]) if isinstance(paper.get('authors'), list) else ''} · {fmt_date(paper.get('published'))}</div>
+                    <div class="paper-abstract">{str(paper.get('abstract',''))[:200]}...</div>
+                </div>""", unsafe_allow_html=True)
 
         st.divider()
-
-        # 相似论文推荐
-        st.subheader("🔗 相似论文推荐")
-        selected = st.selectbox("选择一篇论文，查找相似文献", df["title"].tolist(), key="sim_select")
-        if st.button("查找相似论文"):
-            with st.spinner("计算相似度..."):
+        st.markdown('<p class="section-title" style="font-size:1.3rem">Find Similar Papers</p>', unsafe_allow_html=True)
+        selected = st.selectbox("Select a paper", df["title"].tolist(), key="sim_sel", label_visibility="collapsed")
+        if st.button("Find Similar", use_container_width=True):
+            with st.spinner("Computing similarity..."):
                 similar = similar_paper_recommend(df, selected, top_n=5)
-                st.session_state.similar_papers = similar
+                for _, p in similar.iterrows():
+                    sim = p.get("similarity", 0)
+                    st.markdown(f"""<div class="paper-item">
+                        <div style="display:flex;justify-content:space-between">
+                            <div class="paper-title">{p['title']}</div>
+                            <span class="tag">Similarity: {sim:.0%}</span>
+                        </div></div>""", unsafe_allow_html=True)
 
-        if "similar_papers" in st.session_state:
-            for _, paper in st.session_state.similar_papers.iterrows():
-                sim_score = paper.get('similarity', 0)
-                st.markdown(f"- 📄 **{paper['title']}** (相似度: {sim_score:.2f})")
 
-
-# ============ Tab 5: AI助手（新增） ============
+# ============================================================
+#  TAB 5 — AI Assistant
+# ============================================================
 with tab5:
-    st.header("🤖 AI文献助手")
-
     df = st.session_state.papers_df
-
     if df.empty:
-        st.info("请先在「文献检索」中搜索文献")
+        st.markdown('<div class="card" style="text-align:center;padding:4rem"><div class="card-header">No Data Yet</div><div class="card-sub">Search for papers to use the AI assistant</div></div>', unsafe_allow_html=True)
     else:
-        ai_tab1, ai_tab2, ai_tab3 = st.tabs(["💬 论文问答", "📝 文献综述", "🔍 结构化提取"])
+        ai_tab1, ai_tab2, ai_tab3 = st.tabs(["Chat", "Literature Review", "Extract"])
 
-        # === 论文问答 ===
         with ai_tab1:
-            st.subheader("💬 与论文对话")
-            st.caption("基于已检索文献的内容，向AI提问获取洞察")
+            st.markdown('<p class="section-title" style="font-size:1.3rem">Ask About Your Papers</p>', unsafe_allow_html=True)
 
-            # 展示历史
             for msg in st.session_state.chat_history:
                 with st.chat_message(msg["role"]):
                     st.markdown(msg["content"])
 
-            user_question = st.chat_input("输入您的问题，如：这些论文主要使用了哪些研究方法？")
-            if user_question:
-                st.session_state.chat_history.append({"role": "user", "content": user_question})
+            user_q = st.chat_input("Ask a question about the papers...")
+            if user_q:
+                st.session_state.chat_history.append({"role": "user", "content": user_q})
                 with st.chat_message("user"):
-                    st.markdown(user_question)
+                    st.markdown(user_q)
 
                 client = get_llm_client()
                 if client:
-                    # 找最相关的论文作为上下文
                     try:
                         from sklearn.feature_extraction.text import TfidfVectorizer
-                        from sklearn.metrics.pairwise import cosine_similarity as cos_sim
+                        from sklearn.metrics.pairwise import cosine_similarity as cs
                         texts = (df["title"].fillna("") + " " + df["abstract"].fillna("")).tolist()
-                        all_texts = [user_question] + texts
                         vec = TfidfVectorizer(max_features=500, stop_words="english")
-                        mat = vec.fit_transform(all_texts)
-                        sims = cos_sim(mat[0:1], mat[1:]).flatten()
+                        mat = vec.fit_transform([user_q] + texts)
+                        sims = cs(mat[0:1], mat[1:]).flatten()
                         top_idx = sims.argsort()[-8:][::-1]
-                        context_papers = df.iloc[top_idx]
+                        ctx_papers = df.iloc[top_idx]
                     except Exception:
-                        context_papers = df.head(8)
+                        ctx_papers = df.head(8)
 
                     context = ""
-                    for idx, (_, p) in enumerate(context_papers.iterrows()):
-                        context += f"\n[论文{idx+1}] {p['title']}\n摘要: {str(p.get('abstract', ''))[:400]}\n"
+                    for idx, (_, p) in enumerate(ctx_papers.iterrows()):
+                        context += f"\n[Paper {idx+1}] {p['title']}\nAbstract: {str(p.get('abstract', ''))[:400]}\n"
 
                     with st.chat_message("assistant"):
-                        with st.spinner("AI思考中..."):
+                        with st.spinner("Thinking..."):
                             try:
                                 resp = client.chat.completions.create(
                                     model=MODEL_NAME,
                                     messages=[
-                                        {"role": "system", "content": f"""你是一个学术文献分析助手。根据以下论文信息回答用户的问题。
-回答时请引用具体论文编号[论文X]，使答案有据可查。使用中文回答。
-
-相关论文：
-{context}"""},
-                                        {"role": "user", "content": user_question},
+                                        {"role": "system", "content": f"You are a research assistant. Answer based on the papers below. Cite papers as [Paper X]. Use Chinese.\n\nPapers:\n{context}"},
+                                        {"role": "user", "content": user_q},
                                     ],
-                                    temperature=0.3,
-                                    max_tokens=1500,
+                                    temperature=0.3, max_tokens=1500,
                                 )
                                 answer = resp.choices[0].message.content
                                 st.markdown(answer)
                                 st.session_state.chat_history.append({"role": "assistant", "content": answer})
                             except Exception as e:
-                                st.error(f"AI回答出错: {e}")
+                                st.error(f"Error: {e}")
                 else:
                     with st.chat_message("assistant"):
-                        st.warning("请配置LLM API密钥以使用问答功能")
+                        st.warning("Please configure LLM API key in .env file")
 
-            if st.button("🗑️ 清除对话历史"):
+            if st.session_state.chat_history and st.button("Clear Chat"):
                 st.session_state.chat_history = []
                 st.rerun()
 
-        # === 文献综述 ===
         with ai_tab2:
-            st.subheader("📝 AI生成文献综述")
-            review_scope = st.slider("综述论文数量", 5, min(30, len(df)), min(10, len(df)))
-
-            if st.button("生成文献综述报告", type="primary", key="gen_review"):
+            st.markdown('<p class="section-title" style="font-size:1.3rem">Generate Literature Review</p>', unsafe_allow_html=True)
+            review_n = st.slider("Number of papers to review", 5, min(30, len(df)), min(10, len(df)))
+            if st.button("Generate Review", type="primary", key="gen_rev"):
                 client = get_llm_client()
                 if client:
-                    with st.spinner("AI正在生成文献综述报告..."):
-                        top_papers = df.head(review_scope)
+                    with st.spinner("Generating review..."):
                         papers_text = ""
-                        for _, p in top_papers.iterrows():
-                            papers_text += f"\n标题: {p['title']}\n摘要: {str(p.get('abstract', ''))[:300]}\n"
+                        for _, p in df.head(review_n).iterrows():
+                            papers_text += f"\nTitle: {p['title']}\nAbstract: {str(p.get('abstract', ''))[:300]}\n"
                         try:
                             resp = client.chat.completions.create(
                                 model=MODEL_NAME,
                                 messages=[
-                                    {"role": "system", "content": """你是一个学术文献综述专家。请根据以下论文信息，生成一份详细的文献综述报告，包括：
-1. 研究领域概述
-2. 主要研究方向和方法分类
-3. 关键发现和贡献总结
-4. 研究趋势和热点分析
-5. 当前研究不足与未来方向建议
-
-使用中文，保持学术风格，结构清晰。"""},
+                                    {"role": "system", "content": "You are an academic literature review expert. Generate a comprehensive review in Chinese covering: 1) Field overview 2) Key research directions 3) Main findings 4) Trends 5) Future directions. Be structured and academic."},
                                     {"role": "user", "content": papers_text},
                                 ],
-                                temperature=0.3,
-                                max_tokens=3000,
+                                temperature=0.3, max_tokens=3000,
                             )
-                            report = resp.choices[0].message.content
-                            st.markdown(report)
-                            st.download_button("📥 下载报告", report, "literature_review.md", "text/markdown")
+                            review = resp.choices[0].message.content
+                            st.markdown(f'<div class="card">{review}</div>', unsafe_allow_html=True)
+                            st.download_button("Download Review", review, "review.md", "text/markdown")
                         except Exception as e:
-                            st.error(f"AI分析出错: {e}")
+                            st.error(f"Error: {e}")
                 else:
-                    st.warning("请配置LLM API密钥")
+                    st.warning("Please configure LLM API key")
 
-        # === 结构化提取 ===
         with ai_tab3:
-            st.subheader("🔍 结构化信息提取")
-            st.caption("让AI从论文中提取自定义字段，生成结构化对比表")
+            st.markdown('<p class="section-title" style="font-size:1.3rem">Structured Extraction</p><p class="section-sub">Extract custom fields from papers into a comparison table</p>', unsafe_allow_html=True)
 
-            default_fields = "研究方法, 数据集, 关键发现, 局限性"
-            custom_fields = st.text_input("自定义提取字段（逗号分隔）", value=default_fields)
-            extract_count = st.slider("提取论文数", 3, min(20, len(df)), min(10, len(df)))
+            fields_input = st.text_input("Fields to extract (comma-separated)", value="Research Method, Dataset, Key Finding, Limitation")
+            extract_n = st.slider("Papers to extract", 3, min(15, len(df)), min(8, len(df)))
 
-            if st.button("🔬 开始结构化提取", type="primary", key="struct_extract"):
+            if st.button("Extract", type="primary", key="struct_ext"):
                 client = get_llm_client()
                 if client:
-                    with st.spinner("AI正在提取结构化信息..."):
-                        fields = [f.strip() for f in custom_fields.split(",")]
-                        top_papers = df.head(extract_count)
-                        all_results = []
+                    fields = [f.strip() for f in fields_input.split(",")]
+                    all_results = []
+                    progress = st.progress(0)
 
-                        for _, p in top_papers.iterrows():
-                            try:
-                                resp = client.chat.completions.create(
-                                    model=MODEL_NAME,
-                                    messages=[
-                                        {"role": "system", "content": f"""从论文信息中提取以下字段: {', '.join(fields)}
-以JSON对象格式返回，只返回JSON，不要其他内容。如果无法确定某个字段，填"未知"。"""},
-                                        {"role": "user", "content": f"标题: {p['title']}\n摘要: {str(p.get('abstract', ''))[:500]}"},
-                                    ],
-                                    temperature=0.1,
-                                    max_tokens=500,
-                                )
-                                text = resp.choices[0].message.content.strip()
-                                import re
-                                match = re.search(r"\{.*\}", text, re.DOTALL)
-                                if match:
-                                    extracted = json.loads(match.group())
-                                    extracted["论文标题"] = p["title"]
-                                    all_results.append(extracted)
-                            except Exception:
-                                all_results.append({"论文标题": p["title"], **{f: "提取失败" for f in fields}})
+                    for idx, (_, p) in enumerate(df.head(extract_n).iterrows()):
+                        progress.progress((idx + 1) / extract_n)
+                        try:
+                            resp = client.chat.completions.create(
+                                model=MODEL_NAME,
+                                messages=[
+                                    {"role": "system", "content": f"Extract these fields from the paper: {', '.join(fields)}. Return as JSON object. Only return JSON."},
+                                    {"role": "user", "content": f"Title: {p['title']}\nAbstract: {str(p.get('abstract', ''))[:500]}"},
+                                ],
+                                temperature=0.1, max_tokens=500,
+                            )
+                            text = resp.choices[0].message.content.strip()
+                            match = re.search(r"\{.*\}", text, re.DOTALL)
+                            if match:
+                                extracted = json.loads(match.group())
+                                extracted["Paper"] = p["title"][:50]
+                                all_results.append(extracted)
+                        except Exception:
+                            all_results.append({"Paper": p["title"][:50], **{f: "—" for f in fields}})
 
-                        if all_results:
-                            result_df = pd.DataFrame(all_results)
-                            cols = ["论文标题"] + [c for c in result_df.columns if c != "论文标题"]
-                            st.dataframe(result_df[cols], use_container_width=True)
-                            csv = result_df[cols].to_csv(index=False).encode("utf-8")
-                            st.download_button("📥 下载提取结果", csv, "extracted_info.csv", "text/csv")
+                    progress.empty()
+                    if all_results:
+                        rdf = pd.DataFrame(all_results)
+                        cols = ["Paper"] + [c for c in rdf.columns if c != "Paper"]
+                        st.dataframe(rdf[cols], use_container_width=True)
+                        st.download_button("Download CSV", rdf[cols].to_csv(index=False).encode("utf-8"), "extracted.csv", "text/csv")
                 else:
-                    st.warning("请配置LLM API密钥")
+                    st.warning("Please configure LLM API key")
 
 
-# ============ Tab 6: 文献管理 ============
+# ============================================================
+#  TAB 6 — Library
+# ============================================================
 with tab6:
-    st.header("📋 文献管理与导出")
-
     df = st.session_state.papers_df
     if df.empty:
-        st.info("请先在「文献检索」中搜索文献")
+        st.markdown('<div class="card" style="text-align:center;padding:4rem"><div class="card-header">Your Library is Empty</div><div class="card-sub">Search and save papers to build your library</div></div>', unsafe_allow_html=True)
     else:
-        # 数据导出
-        st.subheader("📥 数据导出")
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            csv = df.to_csv(index=False).encode("utf-8")
-            st.download_button("📄 下载CSV", csv, "papers.csv", "text/csv", use_container_width=True)
-        with col2:
-            json_data = df.to_json(orient="records", force_ascii=False, indent=2)
-            st.download_button("📋 下载JSON", json_data, "papers.json", "application/json", use_container_width=True)
-        with col3:
-            bibtex = generate_bibtex(df)
-            st.download_button("📚 下载BibTeX", bibtex, "papers.bib", "text/plain", use_container_width=True)
+        st.markdown('<p class="section-title">Library</p>', unsafe_allow_html=True)
 
-        st.divider()
+        render_stat_pills([
+            (len(df), "Papers"),
+            (df["source"].nunique() if "source" in df.columns else 0, "Sources"),
+            (len(set(a for al in df["authors"] if isinstance(al, list) for a in al)), "Authors"),
+            (int(df["citation_count"].sum()) if "citation_count" in df.columns else 0, "Total Citations"),
+        ])
 
-        # 文献标注
-        st.subheader("🏷️ 文献标注")
+        # Export
+        st.markdown('<div class="card"><div class="card-header" style="font-size:1.1rem">Export Data</div>', unsafe_allow_html=True)
+        ecol1, ecol2, ecol3 = st.columns(3)
+        with ecol1:
+            st.download_button("CSV", df.to_csv(index=False).encode("utf-8"), "papers.csv", "text/csv", use_container_width=True)
+        with ecol2:
+            st.download_button("JSON", df.to_json(orient="records", force_ascii=False, indent=2), "papers.json", "application/json", use_container_width=True)
+        with ecol3:
+            st.download_button("BibTeX", generate_bibtex(df), "papers.bib", "text/plain", use_container_width=True)
+        st.markdown('</div>', unsafe_allow_html=True)
+
+        # Notes
+        st.markdown('<p class="section-title" style="font-size:1.3rem">Paper Notes</p>', unsafe_allow_html=True)
         notes = load_notes()
-        selected_paper = st.selectbox("选择论文", df["title"].tolist(), key="annotate_select")
+        sel_paper = st.selectbox("Select paper", df["title"].tolist(), key="note_sel", label_visibility="collapsed")
+        existing = notes.get(sel_paper, "")
+        note_text = st.text_area("Note", value=existing, placeholder="Write your notes...", label_visibility="collapsed")
 
-        # 如果已有标注，预填
-        existing_note = notes.get(selected_paper, "")
-        annotation = st.text_area("添加笔记/标注", value=existing_note,
-                                  placeholder="在此输入您对这篇论文的笔记...")
-
-        note_col1, note_col2 = st.columns(2)
-        with note_col1:
-            if st.button("💾 保存标注", use_container_width=True):
-                if annotation.strip():
-                    notes[selected_paper] = annotation
+        ncol1, ncol2 = st.columns(2)
+        with ncol1:
+            if st.button("Save Note", type="primary", use_container_width=True):
+                if note_text.strip():
+                    notes[sel_paper] = note_text
                     save_notes(notes)
-                    st.success("标注已保存")
+                    st.toast("Note saved")
                 else:
-                    st.warning("标注内容不能为空")
-        with note_col2:
-            if existing_note and st.button("🗑️ 删除标注", use_container_width=True):
-                notes.pop(selected_paper, None)
+                    st.warning("Note cannot be empty")
+        with ncol2:
+            if existing and st.button("Delete Note", use_container_width=True):
+                notes.pop(sel_paper, None)
                 save_notes(notes)
-                st.success("标注已删除")
+                st.toast("Note deleted")
                 st.rerun()
 
-        # 展示已有标注
         if notes:
-            st.subheader("📝 已有标注")
             for title, note in notes.items():
-                display_title = title if len(title) <= 60 else title[:60] + "..."
-                with st.expander(f"📄 {display_title}"):
+                disp = title if len(title) <= 50 else title[:50] + "..."
+                with st.expander(disp):
                     st.write(note)
 
-        st.divider()
 
-        # 数据统计面板
-        st.subheader("📊 数据统计")
-        stat_col1, stat_col2, stat_col3, stat_col4 = st.columns(4)
-        with stat_col1:
-            st.metric("总论文数", len(df))
-        with stat_col2:
-            st.metric("来源数", df["source"].nunique() if "source" in df.columns else 0)
-        with stat_col3:
-            unique_authors = set()
-            for a in df["authors"]:
-                if isinstance(a, list):
-                    unique_authors.update(a)
-            st.metric("独立作者数", len(unique_authors))
-        with stat_col4:
-            st.metric("总引用", int(df["citation_count"].sum()) if "citation_count" in df.columns else 0)
-
-
-# ============ 页脚 ============
-st.divider()
+# ============================================================
+#  Footer
+# ============================================================
 st.markdown("""
-<p style="text-align:center;color:gray;font-size:0.8rem;">
-    ScholarMind v2.0 | 基于AI大模型 | 数据来源: arXiv & Semantic Scholar
-</p>
+<div style="text-align:center;padding:3rem 0 1rem;color:#86868b;font-size:0.75rem;letter-spacing:0.02em">
+    ScholarMind v2.0 · Powered by AI · Data from arXiv & Semantic Scholar
+</div>
 """, unsafe_allow_html=True)
