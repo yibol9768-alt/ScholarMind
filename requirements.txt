@@ -15,3 +15,4 @@ matplotlib>=3.8.0
 openai>=1.10.0
 python-dotenv>=1.0.0
 pywebview>=5.0
+nicegui>=3.0

@@ -1,5 +1,5 @@
 """文献数据收集与预处理模块
-从arXiv和Semantic Scholar抓取文献数据，清洗、标准化和存储。
+支持 OpenAlex（主力，免费无限频）、arXiv、Semantic Scholar 三大数据源。
 """
 
 import json
@@ -8,24 +8,106 @@ import time
 from datetime import datetime
 from typing import Optional
 
-import arxiv
 import pandas as pd
 import requests
 
 from config import DATA_DIR, S2_API_KEY
 
+# OpenAlex polite pool (提供 email 可获更高限频)
+OPENALEX_EMAIL = "scholarmind@example.com"
+
+
+def search_openalex(query: str, max_results: int = 50, sort_by: str = "relevance") -> list[dict]:
+    """从 OpenAlex 搜索文献（免费，无限频限制，2.5亿+文献）"""
+    url = "https://api.openalex.org/works"
+    sort_map = {
+        "relevance": "relevance_score:desc",
+        "date": "publication_date:desc",
+        "cited": "cited_by_count:desc",
+    }
+    params = {
+        "search": query,
+        "per_page": min(max_results, 100),
+        "sort": sort_map.get(sort_by, "relevance_score:desc"),
+        "mailto": OPENALEX_EMAIL,
+    }
+    papers = []
+    try:
+        resp = requests.get(url, params=params, timeout=20)
+        resp.raise_for_status()
+        data = resp.json()
+        for item in data.get("results", []):
+            # 提取作者
+            authors = []
+            for authorship in item.get("authorships", []):
+                name = authorship.get("author", {}).get("display_name", "")
+                if name:
+                    authors.append(name)
+
+            # 提取关键词/概念
+            keywords = []
+            for concept in item.get("concepts", [])[:8]:
+                kw = concept.get("display_name", "")
+                if kw:
+                    keywords.append(kw)
+
+            # 提取领域
+            categories = []
+            for topic in item.get("topics", [])[:5]:
+                cat = topic.get("display_name", "")
+                if cat:
+                    categories.append(cat)
+
+            paper = {
+                "id": item.get("id", ""),
+                "title": item.get("title", "") or "",
+                "abstract": _reconstruct_abstract(item.get("abstract_inverted_index")),
+                "authors": authors,
+                "published": item.get("publication_date", "") or "",
+                "updated": "",
+                "categories": categories,
+                "doi": item.get("doi", "") or "",
+                "pdf_url": (item.get("primary_location") or {}).get("pdf_url", "") or
+                           (item.get("best_oa_location") or {}).get("pdf_url", "") or "",
+                "source": "openalex",
+                "keywords": keywords,
+                "citation_count": item.get("cited_by_count", 0) or 0,
+                "reference_count": len(item.get("referenced_works", [])),
+            }
+            if paper["title"]:  # 过滤无标题
+                papers.append(paper)
+    except Exception as e:
+        print(f"OpenAlex API error: {e}")
+    return papers
+
+
+def _reconstruct_abstract(inverted_index: dict | None) -> str:
+    """从 OpenAlex 倒排索引重建摘要文本"""
+    if not inverted_index:
+        return ""
+    try:
+        word_positions = []
+        for word, positions in inverted_index.items():
+            for pos in positions:
+                word_positions.append((pos, word))
+        word_positions.sort()
+        return " ".join(w for _, w in word_positions)
+    except Exception:
+        return ""
+
 
 def search_arxiv(query: str, max_results: int = 50, sort_by: str = "relevance") -> list[dict]:
-    """从arXiv搜索文献"""
-    sort_map = {
-        "relevance": arxiv.SortCriterion.Relevance,
-        "date": arxiv.SortCriterion.SubmittedDate,
-    }
+    """从 arXiv 搜索文献（有限频限制，作为备选）"""
     try:
-        client = arxiv.Client()
+        import arxiv
+        sort_map = {
+            "relevance": arxiv.SortCriterion.Relevance,
+            "date": arxiv.SortCriterion.SubmittedDate,
+        }
+        client = arxiv.Client(num_retries=3, page_size=min(max_results, 50))
         search = arxiv.Search(
             query=query,
-            max_results=max_results,
+            max_results=min(max_results, 50),  # 限制数量减少429
             sort_by=sort_map.get(sort_by, arxiv.SortCriterion.Relevance),
         )
         papers = []
@@ -53,7 +135,7 @@ def search_arxiv(query: str, max_results: int = 50, sort_by: str = "relevance") 
 
 
 def search_semantic_scholar(query: str, max_results: int = 50, year: Optional[str] = None) -> list[dict]:
-    """从Semantic Scholar搜索文献"""
+    """从 Semantic Scholar 搜索文献（有限频限制，作为备选）"""
     url = "https://api.semanticscholar.org/graph/v1/paper/search"
     headers = {}
     if S2_API_KEY:
@@ -61,36 +143,45 @@ def search_semantic_scholar(query: str, max_results: int = 50, year: Optional[st
 
     params = {
         "query": query,
-        "limit": min(max_results, 100),
+        "limit": min(max_results, 50),
         "fields": "title,abstract,authors,year,citationCount,referenceCount,fieldsOfStudy,publicationDate,externalIds,url",
     }
     if year:
         params["year"] = year
 
     papers = []
-    try:
-        resp = requests.get(url, params=params, headers=headers, timeout=30)
-        resp.raise_for_status()
-        data = resp.json()
-        for item in data.get("data", []):
-            paper = {
-                "id": item.get("paperId", ""),
-                "title": item.get("title", ""),
-                "abstract": item.get("abstract", "") or "",
-                "authors": [a.get("name", "") for a in item.get("authors", [])],
-                "published": item.get("publicationDate", "") or "",
-                "updated": "",
-                "categories": item.get("fieldsOfStudy", []) or [],
-                "doi": (item.get("externalIds") or {}).get("DOI", ""),
-                "pdf_url": item.get("url", ""),
-                "source": "semantic_scholar",
-                "keywords": item.get("fieldsOfStudy", []) or [],
-                "citation_count": item.get("citationCount", 0),
-                "reference_count": item.get("referenceCount", 0),
-            }
-            papers.append(paper)
-    except Exception as e:
-        print(f"Semantic Scholar API error: {e}")
+    for attempt in range(3):
+        try:
+            resp = requests.get(url, params=params, headers=headers, timeout=15)
+            if resp.status_code == 429:
+                wait = 3 * (attempt + 1)
+                print(f"S2 rate limited, waiting {wait}s...")
+                time.sleep(wait)
+                continue
+            resp.raise_for_status()
+            data = resp.json()
+            for item in data.get("data", []):
+                paper = {
+                    "id": item.get("paperId", ""),
+                    "title": item.get("title", ""),
+                    "abstract": item.get("abstract", "") or "",
+                    "authors": [a.get("name", "") for a in item.get("authors", [])],
+                    "published": item.get("publicationDate", "") or "",
+                    "updated": "",
+                    "categories": item.get("fieldsOfStudy", []) or [],
+                    "doi": (item.get("externalIds") or {}).get("DOI", ""),
+                    "pdf_url": item.get("url", ""),
+                    "source": "semantic_scholar",
+                    "keywords": item.get("fieldsOfStudy", []) or [],
+                    "citation_count": item.get("citationCount", 0),
+                    "reference_count": item.get("referenceCount", 0),
+                }
+                papers.append(paper)
+            break
+        except Exception as e:
+            print(f"Semantic Scholar API error (attempt {attempt+1}): {e}")
+            if attempt < 2:
+                time.sleep(2)
     return papers
 
 
@@ -100,12 +191,9 @@ def get_paper_citations(paper_id: str) -> list[dict]:
     headers = {}
     if S2_API_KEY:
         headers["x-api-key"] = S2_API_KEY
-    params = {
-        "fields": "title,authors,year,citationCount",
-        "limit": 50,
-    }
+    params = {"fields": "title,authors,year,citationCount", "limit": 50}
     try:
-        resp = requests.get(url, params=params, headers=headers, timeout=30)
+        resp = requests.get(url, params=params, headers=headers, timeout=15)
         resp.raise_for_status()
         data = resp.json()
         return [
@@ -129,12 +217,9 @@ def get_paper_references(paper_id: str) -> list[dict]:
     headers = {}
     if S2_API_KEY:
         headers["x-api-key"] = S2_API_KEY
-    params = {
-        "fields": "title,authors,year,citationCount",
-        "limit": 50,
-    }
+    params = {"fields": "title,authors,year,citationCount", "limit": 50}
     try:
-        resp = requests.get(url, params=params, headers=headers, timeout=30)
+        resp = requests.get(url, params=params, headers=headers, timeout=15)
         resp.raise_for_status()
         data = resp.json()
         return [
@@ -157,15 +242,11 @@ def clean_and_standardize(papers: list[dict]) -> pd.DataFrame:
     df = pd.DataFrame(papers)
     if df.empty:
         return df
-    # 去重
     df = df.drop_duplicates(subset=["title"], keep="first")
-    # 清洗文本
     df["title"] = df["title"].str.strip().str.replace(r"\s+", " ", regex=True)
     df["abstract"] = df["abstract"].str.strip().str.replace(r"\s+", " ", regex=True)
-    # 标准化日期
     df["published"] = pd.to_datetime(df["published"], errors="coerce")
     df["year"] = df["published"].dt.year
-    # 填充缺失值
     df["abstract"] = df["abstract"].fillna("")
     if "citation_count" not in df.columns:
         df["citation_count"] = 0
