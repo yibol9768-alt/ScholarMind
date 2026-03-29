@@ -150,18 +150,20 @@ def trend_analysis(df: pd.DataFrame) -> dict:
     }
 
 
-def identify_hot_topics(df: pd.DataFrame, recent_years: int = 3) -> list[dict]:
+def identify_hot_topics(df: pd.DataFrame, recent_years: int = 3) -> dict:
     """识别近几年的热点主题"""
     if df.empty or "year" not in df.columns:
-        return []
+        return {}
 
     df_valid = df.dropna(subset=["year"]).copy()
     df_valid["year"] = df_valid["year"].astype(int)
+    if df_valid.empty:
+        return {}
     max_year = df_valid["year"].max()
     recent_df = df_valid[df_valid["year"] >= max_year - recent_years]
 
     if recent_df.empty:
-        return []
+        return {}
 
     # 提取最近几年的所有关键词
     all_keywords = []

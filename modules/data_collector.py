@@ -21,29 +21,35 @@ def search_arxiv(query: str, max_results: int = 50, sort_by: str = "relevance") 
         "relevance": arxiv.SortCriterion.Relevance,
         "date": arxiv.SortCriterion.SubmittedDate,
     }
-    client = arxiv.Client()
-    search = arxiv.Search(
-        query=query,
-        max_results=max_results,
-        sort_by=sort_map.get(sort_by, arxiv.SortCriterion.Relevance),
-    )
-    papers = []
-    for result in client.results(search):
-        paper = {
-            "id": result.entry_id,
-            "title": result.title,
-            "abstract": result.summary,
-            "authors": [a.name for a in result.authors],
-            "published": result.published.strftime("%Y-%m-%d") if result.published else "",
-            "updated": result.updated.strftime("%Y-%m-%d") if result.updated else "",
-            "categories": result.categories,
-            "doi": result.doi or "",
-            "pdf_url": result.pdf_url or "",
-            "source": "arxiv",
-            "keywords": result.categories,  # arXiv用分类作为关键词
-        }
-        papers.append(paper)
-    return papers
+    try:
+        client = arxiv.Client()
+        search = arxiv.Search(
+            query=query,
+            max_results=max_results,
+            sort_by=sort_map.get(sort_by, arxiv.SortCriterion.Relevance),
+        )
+        papers = []
+        for result in client.results(search):
+            paper = {
+                "id": result.entry_id,
+                "title": result.title,
+                "abstract": result.summary,
+                "authors": [a.name for a in result.authors],
+                "published": result.published.strftime("%Y-%m-%d") if result.published else "",
+                "updated": result.updated.strftime("%Y-%m-%d") if result.updated else "",
+                "categories": result.categories,
+                "doi": result.doi or "",
+                "pdf_url": result.pdf_url or "",
+                "source": "arxiv",
+                "keywords": result.categories,
+                "citation_count": 0,
+                "reference_count": 0,
+            }
+            papers.append(paper)
+        return papers
+    except Exception as e:
+        print(f"arXiv API error: {e}")
+        return []
 
 
 def search_semantic_scholar(query: str, max_results: int = 50, year: Optional[str] = None) -> list[dict]:
@@ -161,7 +167,12 @@ def clean_and_standardize(papers: list[dict]) -> pd.DataFrame:
     df["year"] = df["published"].dt.year
     # 填充缺失值
     df["abstract"] = df["abstract"].fillna("")
-    df["citation_count"] = df.get("citation_count", pd.Series(dtype=int)).fillna(0).astype(int)
+    if "citation_count" not in df.columns:
+        df["citation_count"] = 0
+    df["citation_count"] = df["citation_count"].fillna(0).astype(int)
+    if "reference_count" not in df.columns:
+        df["reference_count"] = 0
+    df["reference_count"] = df["reference_count"].fillna(0).astype(int)
     return df.reset_index(drop=True)
 
 
@@ -176,8 +187,14 @@ def load_papers(filename: str = "papers.json") -> pd.DataFrame:
     """加载已保存的文献数据"""
     path = os.path.join(DATA_DIR, filename)
     if os.path.exists(path):
-        df = pd.read_json(path, orient="records")
-        df["published"] = pd.to_datetime(df["published"], errors="coerce")
-        df["year"] = df["published"].dt.year
-        return df
+        try:
+            df = pd.read_json(path, orient="records")
+            df["published"] = pd.to_datetime(df["published"], errors="coerce")
+            df["year"] = df["published"].dt.year
+            if "citation_count" not in df.columns:
+                df["citation_count"] = 0
+            return df
+        except Exception as e:
+            print(f"Error loading papers: {e}")
+            return pd.DataFrame()
     return pd.DataFrame()
