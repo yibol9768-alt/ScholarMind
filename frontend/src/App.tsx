@@ -126,22 +126,40 @@ function TaskDetailRoute() {
 
 function LogViewerRoute() {
   const { taskId } = useParams<{ taskId: string }>();
-  return <LogViewer taskId={taskId || ''} />;
+  return (
+    <div className="flex-1 flex flex-col overflow-y-auto p-4">
+      <LogViewer taskId={taskId || ''} />
+    </div>
+  );
 }
 
 function ReviewPanelRoute() {
   const { taskId } = useParams<{ taskId: string }>();
-  return <ReviewPanel taskId={taskId || ''} />;
+  return (
+    <div className="flex-1 overflow-y-auto p-6">
+      <div className="max-w-[900px] mx-auto">
+        <ReviewPanel taskId={taskId || ''} />
+      </div>
+    </div>
+  );
 }
 
 function CodeViewerRoute() {
   const { taskId } = useParams<{ taskId: string }>();
-  return <CodeViewer taskId={taskId || ''} />;
+  return (
+    <div className="flex-1 flex flex-col overflow-hidden p-4">
+      <CodeViewer taskId={taskId || ''} />
+    </div>
+  );
 }
 
 function PaperPreviewRoute() {
   const { taskId } = useParams<{ taskId: string }>();
-  return <PaperPreview taskId={taskId || ''} />;
+  return (
+    <div className="flex-1 flex flex-col overflow-hidden p-4">
+      <PaperPreview taskId={taskId || ''} />
+    </div>
+  );
 }
 
 function SettingsRoute() {

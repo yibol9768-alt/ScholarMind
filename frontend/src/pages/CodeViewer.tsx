@@ -159,7 +159,7 @@ export default function CodeViewer({ taskId }: { taskId: string }) {
   }
 
   return (
-    <div className="flex flex-col h-[600px] animate-fade-in">
+    <div className="flex flex-col h-full animate-fade-in">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">

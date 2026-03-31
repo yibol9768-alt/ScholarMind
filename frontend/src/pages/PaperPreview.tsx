@@ -48,7 +48,7 @@ export default function PaperPreview({ taskId }: { taskId: string }) {
   }
 
   return (
-    <div className={`flex flex-col animate-fade-in ${fullscreen ? 'fixed inset-0 z-40 bg-white dark:bg-[#1a1a2e] p-4' : ''}`}>
+    <div className={`flex flex-col h-full animate-fade-in ${fullscreen ? 'fixed inset-0 z-40 bg-white dark:bg-[#1a1a2e] p-4' : ''}`}>
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
@@ -94,7 +94,7 @@ export default function PaperPreview({ taskId }: { taskId: string }) {
       </div>
 
       {/* PDF viewer */}
-      <div className={`bg-[#f4f4f4] dark:bg-[#1e1e2e] rounded-2xl overflow-hidden shadow-sm border border-[#e5e5e5] dark:border-[#333] ${fullscreen ? 'flex-1' : 'h-[550px]'}`}>
+      <div className={`bg-[#f4f4f4] dark:bg-[#1e1e2e] rounded-2xl overflow-hidden shadow-sm border border-[#e5e5e5] dark:border-[#333] ${fullscreen ? 'flex-1' : 'flex-1 min-h-[400px]'}`}>
         <iframe
           src={output.paper_url}
           className="w-full h-full border-0"
