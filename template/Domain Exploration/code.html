@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+
+<html class="light" lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "on-secondary-container": "#57657a",
+              "tertiary-fixed": "#ffdbce",
+              "secondary-fixed-dim": "#b9c7df",
+              "primary-fixed-dim": "#b8c4ff",
+              "surface-container-high": "#eae8e4",
+              "on-error": "#ffffff",
+              "on-primary-container": "#a8b8ff",
+              "surface-variant": "#e4e2de",
+              "surface-container-lowest": "#ffffff",
+              "on-surface-variant": "#444653",
+              "on-primary": "#ffffff",
+              "on-primary-fixed": "#001453",
+              "surface-container-highest": "#e4e2de",
+              "on-tertiary-fixed-variant": "#802a00",
+              "secondary": "#515f74",
+              "background": "#fbf9f5",
+              "on-tertiary-container": "#ffa583",
+              "primary-fixed": "#dde1ff",
+              "tertiary": "#611e00",
+              "surface": "#fbf9f5",
+              "on-error-container": "#93000a",
+              "surface-bright": "#fbf9f5",
+              "outline": "#757684",
+              "primary": "#00288e",
+              "on-background": "#1b1c1a",
+              "outline-variant": "#c4c5d5",
+              "tertiary-container": "#872d00",
+              "surface-tint": "#3755c3",
+              "on-secondary-fixed-variant": "#3a485b",
+              "tertiary-fixed-dim": "#ffb59a",
+              "on-secondary": "#ffffff",
+              "surface-container": "#efeeea",
+              "inverse-on-surface": "#f2f0ed",
+              "primary-container": "#1e40af",
+              "error": "#ba1a1a",
+              "secondary-container": "#d5e3fc",
+              "surface-dim": "#dbdad6",
+              "error-container": "#ffdad6",
+              "inverse-primary": "#b8c4ff",
+              "inverse-surface": "#30312e",
+              "on-tertiary-fixed": "#380d00",
+              "secondary-fixed": "#d5e3fc",
+              "surface-container-low": "#f5f3ef",
+              "on-secondary-fixed": "#0d1c2e",
+              "on-tertiary": "#ffffff",
+              "on-surface": "#1b1c1a",
+              "on-primary-fixed-variant": "#173bab"
+            },
+            fontFamily: {
+              "headline": ["Manrope"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .manuscript-shadow {
+            box-shadow: 0 4px 24px -2px rgba(27, 28, 26, 0.04);
+        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body class="bg-surface font-body text-on-surface">
+<!-- Top Navigation Bar -->
+<header class="fixed top-0 z-50 w-full bg-[#fbf9f5] flex justify-between items-center px-8 py-4 font-manrope text-sm font-semibold tracking-tight transition-colors">
+<div class="flex items-center gap-8">
+<span class="text-xl font-bold text-[#1e40af]">The Digital Atelier</span>
+<nav class="hidden md:flex gap-6">
+<a class="text-[#1e40af] border-b-2 border-[#1e40af] transition-colors" href="#">Domain Exploration</a>
+<a class="text-slate-600 hover:bg-[#f5f3ef] transition-colors px-2 py-1 rounded" href="#">Analytics</a>
+<a class="text-slate-600 hover:bg-[#f5f3ef] transition-colors px-2 py-1 rounded" href="#">Repository</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative hidden lg:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg">search</span>
+<input class="bg-surface-container-low border-none rounded-xl pl-10 pr-4 py-2 text-sm w-64 focus:ring-2 focus:ring-primary/20 transition-all" placeholder="Search insights..." type="text"/>
+</div>
+<span class="material-symbols-outlined text-slate-600 cursor-pointer p-2 hover:bg-[#f5f3ef] rounded-full transition-colors">account_circle</span>
+<span class="material-symbols-outlined text-slate-600 cursor-pointer p-2 hover:bg-[#f5f3ef] rounded-full transition-colors">settings</span>
+</div>
+</header>
+<div class="flex pt-16 min-h-screen">
+<!-- Side Navigation Bar -->
+<aside class="hidden md:flex flex-col h-[calc(100vh-64px)] w-64 bg-[#f5f3ef] sticky top-16 py-6 space-y-2 transition-all ease-in-out duration-300">
+<div class="px-6 mb-8">
+<p class="font-headline text-xs font-bold uppercase tracking-widest text-[#1e40af]">Research Hub</p>
+<p class="text-[10px] text-slate-500 font-medium">Scholarly Workspace</p>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 px-6 py-3 text-slate-500 hover:text-[#1e40af] hover:bg-[#fbf9f5]/50 transition-colors group" href="#">
+<span class="material-symbols-outlined text-xl">auto_stories</span>
+<span class="font-manrope text-sm font-medium">Library</span>
+</a>
+<a class="flex items-center gap-3 px-6 py-3 bg-[#ffffff] text-[#1e40af] font-bold rounded-r-xl shadow-sm" href="#">
+<span class="material-symbols-outlined text-xl">analytics</span>
+<span class="font-manrope text-sm">Analysis</span>
+</a>
+<a class="flex items-center gap-3 px-6 py-3 text-slate-500 hover:text-[#1e40af] hover:bg-[#fbf9f5]/50 transition-colors" href="#">
+<span class="material-symbols-outlined text-xl">inventory_2</span>
+<span class="font-manrope text-sm font-medium">Archive</span>
+</a>
+<a class="flex items-center gap-3 px-6 py-3 text-slate-500 hover:text-[#1e40af] hover:bg-[#fbf9f5]/50 transition-colors" href="#">
+<span class="material-symbols-outlined text-xl">group</span>
+<span class="font-manrope text-sm font-medium">Collaborations</span>
+</a>
+<a class="flex items-center gap-3 px-6 py-3 text-slate-500 hover:text-[#1e40af] hover:bg-[#fbf9f5]/50 transition-colors" href="#">
+<span class="material-symbols-outlined text-xl">history</span>
+<span class="font-manrope text-sm font-medium">History</span>
+</a>
+</nav>
+<div class="px-6 mt-auto">
+<button class="w-full bg-primary text-on-primary py-3 rounded-xl font-manrope text-sm font-semibold flex items-center justify-center gap-2 hover:opacity-90 active:scale-95 transition-all">
+<span class="material-symbols-outlined text-lg">add</span>
+                    New Exploration
+                </button>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="flex-1 px-4 md:px-12 py-10 max-w-7xl mx-auto w-full">
+<!-- Unified Document Header -->
+<section class="mb-12">
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-8 border-b border-surface-container-high">
+<div class="space-y-2">
+<nav class="flex items-center gap-2 text-xs font-medium text-on-secondary-container mb-4">
+<span>Knowledge Base</span>
+<span class="material-symbols-outlined text-[10px]">chevron_right</span>
+<span class="text-primary-container font-semibold">Domain Exploration</span>
+</nav>
+<h1 class="font-headline text-4xl font-extrabold tracking-tight text-on-surface">领域探索</h1>
+<p class="text-on-surface-variant max-w-2xl leading-relaxed">深入挖掘学术前沿，发现交叉领域的隐藏联系与研究契机。通过AI驱动的文献聚类分析，为您呈现最直观的学术图景。</p>
+</div>
+<div class="flex gap-3">
+<button class="bg-surface-container-lowest border border-outline-variant/15 text-on-surface px-5 py-2.5 rounded-xl font-medium text-sm flex items-center gap-2 hover:bg-surface-bright transition-colors manuscript-shadow">
+<span class="material-symbols-outlined text-lg">download</span>
+                            导出报告
+                        </button>
+<button class="bg-primary text-on-primary px-5 py-2.5 rounded-xl font-medium text-sm flex items-center gap-2 hover:bg-primary-container transition-all shadow-lg shadow-primary/10">
+<span class="material-symbols-outlined text-lg">share</span>
+                            分享研究
+                        </button>
+</div>
+</div>
+</section>
+<!-- The Single Flowing Document Structure -->
+<div class="bg-surface-container-lowest rounded-2xl p-8 md:p-12 manuscript-shadow relative overflow-hidden">
+<!-- Subtle Aesthetic Accent -->
+<div class="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-16">
+<!-- Main Narrative Column (8 cols) -->
+<div class="lg:col-span-8 space-y-16">
+<!-- Domain Introduction Section -->
+<div class="space-y-6">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">description</span>
+</div>
+<h2 class="font-headline text-2xl font-bold">领域简介</h2>
+</div>
+<div class="prose prose-slate max-w-none text-on-surface-variant leading-loose text-lg">
+<p>当前领域正处于从<strong>经典神经网络</strong>向<strong>认知启发的智能体系</strong>过渡的关键阶段。随着计算能力的跃升与多模态数据的爆发，研究重点已逐渐从单一的模型精度提升转变为对模型可解释性、能源效率以及跨领域泛化能力的深度探索。</p>
+<p>在本季度的学术产出中，我们观察到关于“神经符号计算”与“环境感知智能”的论文引用率上升了34%。这种趋势表明，学术界正在寻找能够将结构化知识与深度学习优势相结合的新范式。</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
+<div class="bg-surface-container-low p-6 rounded-xl border-l-4 border-primary">
+<div class="text-xs font-bold text-primary uppercase tracking-tighter mb-1">学术活跃度</div>
+<div class="text-2xl font-extrabold font-headline text-on-surface">High</div>
+<div class="text-xs text-on-surface-variant mt-1">+12% YoY</div>
+</div>
+<div class="bg-surface-container-low p-6 rounded-xl border-l-4 border-tertiary-container">
+<div class="text-xs font-bold text-tertiary-container uppercase tracking-tighter mb-1">关键研究路径</div>
+<div class="text-2xl font-extrabold font-headline text-on-surface">Multi-modal</div>
+<div class="text-xs text-on-surface-variant mt-1">452 New Papers</div>
+</div>
+<div class="bg-surface-container-low p-6 rounded-xl border-l-4 border-on-secondary-container">
+<div class="text-xs font-bold text-on-secondary-container uppercase tracking-tighter mb-1">引用峰值</div>
+<div class="text-2xl font-extrabold font-headline text-on-surface">2.4k+</div>
+<div class="text-xs text-on-surface-variant mt-1">Per Month Avg.</div>
+</div>
+</div>
+</div>
+<!-- Recommended Keywords Section -->
+<div class="space-y-6">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-xl bg-tertiary-container/10 flex items-center justify-center text-tertiary-container">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">sell</span>
+</div>
+<h2 class="font-headline text-2xl font-bold">推荐关键词</h2>
+</div>
+<div class="flex flex-wrap gap-3">
+<span class="px-5 py-2.5 bg-secondary-container text-on-secondary-fixed-variant rounded-full text-sm font-semibold hover:bg-primary hover:text-white transition-all cursor-pointer">生成式AI</span>
+<span class="px-5 py-2.5 bg-secondary-container text-on-secondary-fixed-variant rounded-full text-sm font-semibold hover:bg-primary hover:text-white transition-all cursor-pointer">强化学习</span>
+<span class="px-5 py-2.5 bg-secondary-container text-on-secondary-fixed-variant rounded-full text-sm font-semibold hover:bg-primary hover:text-white transition-all cursor-pointer">知识图谱嵌入</span>
+<span class="px-5 py-2.5 bg-secondary-container text-on-secondary-fixed-variant rounded-full text-sm font-semibold hover:bg-primary hover:text-white transition-all cursor-pointer">Transformer变体</span>
+<span class="px-5 py-2.5 bg-secondary-container text-on-secondary-fixed-variant rounded-full text-sm font-semibold hover:bg-primary hover:text-white transition-all cursor-pointer">多智能体协同</span>
+<span class="px-5 py-2.5 bg-secondary-container text-on-secondary-fixed-variant rounded-full text-sm font-semibold hover:bg-primary hover:text-white transition-all cursor-pointer">轻量化部署</span>
+<span class="px-5 py-2.5 bg-secondary-container text-on-secondary-fixed-variant rounded-full text-sm font-semibold hover:bg-primary hover:text-white transition-all cursor-pointer">隐私计算</span>
+<span class="px-5 py-2.5 bg-secondary-container text-on-secondary-fixed-variant rounded-full text-sm font-semibold border-2 border-dashed border-outline-variant text-on-surface-variant hover:border-primary transition-all cursor-pointer">
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">add</span> 更多领域
+                                    </span>
+</span>
+</div>
+<!-- Key Metric Visualization Placeholder -->
+<div class="mt-4 p-8 rounded-2xl bg-surface border border-surface-container-high flex flex-col items-center justify-center space-y-4">
+<div class="w-full h-40 flex items-end justify-between gap-2 px-4">
+<div class="w-full bg-primary/20 rounded-t-lg transition-all hover:bg-primary h-[40%]"></div>
+<div class="w-full bg-primary/20 rounded-t-lg transition-all hover:bg-primary h-[65%]"></div>
+<div class="w-full bg-primary/20 rounded-t-lg transition-all hover:bg-primary h-[45%]"></div>
+<div class="w-full bg-primary/20 rounded-t-lg transition-all hover:bg-primary h-[90%]"></div>
+<div class="w-full bg-primary/20 rounded-t-lg transition-all hover:bg-primary h-[75%]"></div>
+<div class="w-full bg-primary/20 rounded-t-lg transition-all hover:bg-primary h-[55%]"></div>
+<div class="w-full bg-primary/20 rounded-t-lg transition-all hover:bg-primary h-[85%]"></div>
+</div>
+<p class="text-xs font-medium text-on-surface-variant">关键词搜索热度趋势分析 (过去 30 天)</p>
+</div>
+</div>
+</div>
+<!-- Side Information Column (4 cols) -->
+<div class="lg:col-span-4 space-y-12">
+<!-- Hot Authors/Institutions Section -->
+<div class="space-y-6">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-xl bg-on-secondary-container/10 flex items-center justify-center text-on-secondary-container">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">groups</span>
+</div>
+<h2 class="font-headline text-xl font-bold text-[#1e40af]">热门作者与机构</h2>
+</div>
+<div class="space-y-4">
+<!-- Author Card 1 -->
+<div class="p-4 rounded-xl hover:bg-surface-container-low transition-colors group cursor-pointer border border-transparent hover:border-surface-container-high">
+<div class="flex items-center gap-4">
+<img alt="Author" class="w-12 h-12 rounded-full object-cover grayscale group-hover:grayscale-0 transition-all" data-alt="Portrait of a mature scholar in a library setting, warm lighting, professional academic attire, soft focus background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD-n8muaxyz5Y_28vvOnB4v0DM8XDH4Pzuj4Ig_1tUR8u6DWsMOykmSjD7KoDeSZPTCvjRqRoem1YJRi2yOEF5TCm_gMC60q19VVCv6EezkV7RD8JwjYzTgnZpGJNcFzJsFkY-sd1S6riQ6ESpwPhwB-3KhsTzgxUmRQQoTooEuAfUf85IJ4D-j4AsmoULK1W9ywBb3tMAVwK6ksTBPtqDTWfgg57sOhkTd6U5Sy_N2hQeewxYucGmlkVQNtHeNJMRXHbCijkxGMRA"/>
+<div class="flex-1">
+<h4 class="font-semibold text-on-surface group-hover:text-primary transition-colors">Dr. Alexander Chen</h4>
+<p class="text-xs text-on-surface-variant">Stanford University • AI Ethics</p>
+</div>
+<span class="material-symbols-outlined text-outline-variant group-hover:text-primary">trending_up</span>
+</div>
+</div>
+<!-- Author Card 2 -->
+<div class="p-4 rounded-xl hover:bg-surface-container-low transition-colors group cursor-pointer border border-transparent hover:border-surface-container-high">
+<div class="flex items-center gap-4">
+<img alt="Author" class="w-12 h-12 rounded-full object-cover grayscale group-hover:grayscale-0 transition-all" data-alt="Close-up of a professional woman scientist in a modern office, confident expression, natural daylight from window" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDgEk9dgw130Momidn9B4AjEKvEWKNCF8655c12nENf4nD--DyA1OxsMtEGvydzfApr_Cxmbz7EHFknAvaMh4kxXVuDl1IGmqLSxkKoqVoG3UxB4AT9VEhbRYYXuK6R9ryGT19hVwJKQhbvHtlXj1qtb8PyVTJTcnDuvDzTbY56v9c2gYZKF1bEzucnRpw2qjbtK_aIyP_C7j-a79dwnR01VpDfjJ0djVy00tj2nVvY_khT1Fu9tAljYPFhabxOIXcU5VylNPtmcZA"/>
+<div class="flex-1">
+<h4 class="font-semibold text-on-surface group-hover:text-primary transition-colors">Prof. Elena Rodriguez</h4>
+<p class="text-xs text-on-surface-variant">MIT CSAIL • Neural Systems</p>
+</div>
+<span class="material-symbols-outlined text-outline-variant group-hover:text-primary">trending_up</span>
+</div>
+</div>
+<div class="pt-4 border-t border-surface-container-high"></div>
+<!-- Institution Card 1 -->
+<div class="flex items-center gap-4 p-4 rounded-xl hover:bg-surface-container-low transition-colors cursor-pointer">
+<div class="w-12 h-12 bg-white rounded-xl shadow-sm flex items-center justify-center text-primary font-bold text-lg">M</div>
+<div class="flex-1">
+<h4 class="font-semibold text-on-surface">Microsoft Research</h4>
+<p class="text-xs text-on-surface-variant">124 Related Publications</p>
+</div>
+</div>
+<!-- Institution Card 2 -->
+<div class="flex items-center gap-4 p-4 rounded-xl hover:bg-surface-container-low transition-colors cursor-pointer">
+<div class="w-12 h-12 bg-white rounded-xl shadow-sm flex items-center justify-center text-[#1e40af] font-bold text-lg">G</div>
+<div class="flex-1">
+<h4 class="font-semibold text-on-surface">Google DeepMind</h4>
+<p class="text-xs text-on-surface-variant">98 Related Publications</p>
+</div>
+</div>
+</div>
+<button class="w-full py-3 text-sm font-semibold text-primary-container bg-primary/5 rounded-xl hover:bg-primary/10 transition-colors">
+                                查看全领域贡献排行
+                            </button>
+</div>
+<!-- Side Annotation / Marginalia -->
+<div class="p-6 bg-surface-container-high/30 rounded-2xl border-l-2 border-primary/20 space-y-4">
+<h3 class="font-headline font-bold text-sm text-[#1e40af] flex items-center gap-2">
+<span class="material-symbols-outlined text-lg">lightbulb</span>
+                                AI 洞察
+                            </h3>
+<p class="text-xs text-on-surface-variant leading-relaxed italic">
+                                "当前的趋势显示，跨学科融合是突破瓶颈的关键。建议关注神经科学与计算机视觉的交叉子领域，那里正酝酿着下一波创新热潮。"
+                            </p>
+<div class="flex items-center gap-2">
+<div class="flex -space-x-2">
+<div class="w-6 h-6 rounded-full border-2 border-surface bg-slate-200"></div>
+<div class="w-6 h-6 rounded-full border-2 border-surface bg-slate-300"></div>
+<div class="w-6 h-6 rounded-full border-2 border-surface bg-slate-400"></div>
+</div>
+<span class="text-[10px] text-on-secondary-container font-medium">12位同行正在关注此领域</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Bottom Content Spacer -->
+<footer class="mt-20 pb-10 text-center">
+<div class="flex justify-center gap-8 text-on-surface-variant/40">
+<span class="material-symbols-outlined">menu_book</span>
+<span class="material-symbols-outlined">history_edu</span>
+<span class="material-symbols-outlined">school</span>
+</div>
+<p class="mt-4 text-[10px] font-medium text-on-surface-variant/60 uppercase tracking-[0.2em]">The Digital Atelier © 2024 Scholarly Content Ecosystem</p>
+</footer>
+</main>
+</div>
+<!-- Mobile Bottom NavBar (Suppressed on large screens) -->
+<nav class="md:hidden fixed bottom-0 w-full bg-white flex justify-around items-center py-3 border-t border-surface-container-high z-50">
+<a class="flex flex-col items-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined">explore</span>
+<span class="text-[10px] font-medium">探索</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-on-surface-variant" href="#">
+<span class="material-symbols-outlined">auto_stories</span>
+<span class="text-[10px] font-medium">书架</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-on-surface-variant" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span class="text-[10px] font-medium">分析</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-on-surface-variant" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="text-[10px] font-medium">我的</span>
+</a>
+</nav>
+</body></html>

@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>The Digital Atelier - Scholarly Workbench</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Manrope:wght@600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "surface-bright": "#fbf9f5",
+            "surface-container": "#efeeea",
+            "secondary-fixed-dim": "#b9c7df",
+            "error": "#ba1a1a",
+            "on-secondary": "#ffffff",
+            "secondary-fixed": "#d5e3fc",
+            "on-secondary-fixed-variant": "#3a485b",
+            "on-tertiary-container": "#ffa583",
+            "on-tertiary": "#ffffff",
+            "surface": "#fbf9f5",
+            "surface-dim": "#dbdad6",
+            "primary-fixed": "#dde1ff",
+            "error-container": "#ffdad6",
+            "outline": "#757684",
+            "on-surface": "#1b1c1a",
+            "inverse-surface": "#30312e",
+            "surface-container-highest": "#e4e2de",
+            "on-primary-fixed": "#001453",
+            "primary-container": "#1e40af",
+            "on-background": "#1b1c1a",
+            "surface-container-low": "#f5f3ef",
+            "inverse-on-surface": "#f2f0ed",
+            "tertiary-fixed": "#ffdbce",
+            "tertiary": "#611e00",
+            "on-secondary-container": "#57657a",
+            "surface-tint": "#3755c3",
+            "primary": "#00288e",
+            "tertiary-fixed-dim": "#ffb59a",
+            "secondary-container": "#d5e3fc",
+            "on-error": "#ffffff",
+            "tertiary-container": "#872d00",
+            "on-error-container": "#93000a",
+            "surface-container-lowest": "#ffffff",
+            "on-surface-variant": "#444653",
+            "on-primary-fixed-variant": "#173bab",
+            "inverse-primary": "#b8c4ff",
+            "surface-container-high": "#eae8e4",
+            "primary-fixed-dim": "#b8c4ff",
+            "surface-variant": "#e4e2de",
+            "on-primary": "#ffffff",
+            "outline-variant": "#c4c5d5",
+            "on-primary-container": "#a8b8ff",
+            "on-tertiary-fixed-variant": "#802a00",
+            "on-secondary-fixed": "#0d1c2e",
+            "secondary": "#515f74",
+            "on-tertiary-fixed": "#380d00",
+            "background": "#fbf9f5"
+          },
+          fontFamily: {
+            "headline": ["Manrope"],
+            "body": ["Inter"],
+            "label": ["Inter"]
+          },
+          borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      vertical-align: middle;
+    }
+    .asymmetric-margin {
+      margin-left: 8.333333%; /* Off-center for marginalia */
+    }
+    .manuscript-shadow {
+      box-shadow: 0 4px 24px rgba(13, 28, 46, 0.04);
+    }
+    .glass-panel {
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(16px);
+    }
+  </style>
+</head>
+<body class="bg-surface-container-low font-body text-on-surface antialiased flex">
+<!-- SideNavBar (Shared Component) -->
+<aside class="h-screen w-64 fixed left-0 top-0 bg-[#f5f3ef] dark:bg-slate-900 flex flex-col p-6 z-40">
+<div class="mb-10">
+<h1 class="text-lg font-black text-blue-900 dark:text-blue-100 font-headline">The Digital Atelier</h1>
+<p class="text-xs text-on-surface-variant/70 uppercase tracking-widest mt-1">Scholarly AI</p>
+</div>
+<nav class="flex flex-col gap-2 flex-grow">
+<a class="flex items-center gap-3 bg-[#ffffff] dark:bg-slate-800 text-blue-800 dark:text-blue-300 rounded-lg px-4 py-3 shadow-sm font-medium" href="#">
+<span class="material-symbols-outlined">local_library</span>
+<span>Library</span>
+</a>
+<a class="flex items-center gap-3 text-slate-500 dark:text-slate-400 px-4 py-3 hover:bg-[#fbf9f5] dark:hover:bg-slate-800/50 transition-all font-medium" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span>Analysis</span>
+</a>
+<a class="flex items-center gap-3 text-slate-500 dark:text-slate-400 px-4 py-3 hover:bg-[#fbf9f5] dark:hover:bg-slate-800/50 transition-all font-medium" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+<span>Archive</span>
+</a>
+<button class="mt-6 w-full py-3 px-4 bg-primary text-on-primary rounded-xl font-bold text-sm shadow-lg shadow-primary/10 flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-sm">add</span>
+        New Analysis
+      </button>
+</nav>
+<div class="mt-auto flex flex-col gap-2">
+<a class="flex items-center gap-3 text-slate-500 dark:text-slate-400 px-4 py-3 hover:bg-[#fbf9f5] transition-all font-medium" href="#">
+<span class="material-symbols-outlined">help</span>
+<span>Help</span>
+</a>
+<a class="flex items-center gap-3 text-slate-500 dark:text-slate-400 px-4 py-3 hover:bg-[#fbf9f5] transition-all font-medium" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span>Logout</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="flex-grow ml-64 min-h-screen relative flex flex-col overflow-x-hidden">
+<!-- TopNavBar (Shared Component) -->
+<header class="flex justify-between items-center w-full px-8 py-4 sticky top-0 z-30 bg-[#fbf9f5] dark:bg-slate-950">
+<div class="flex items-center gap-6">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="pl-10 pr-4 py-2 bg-surface-container border-none rounded-full text-sm focus:ring-2 focus:ring-primary/20 w-64" placeholder="Search literature..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex gap-1">
+<button class="p-2 text-slate-600 hover:text-primary transition-colors"><span class="material-symbols-outlined">notifications</span></button>
+<button class="p-2 text-slate-600 hover:text-primary transition-colors"><span class="material-symbols-outlined">settings</span></button>
+</div>
+<div class="w-8 h-8 rounded-full overflow-hidden border border-surface-container-highest">
+<img alt="User profile avatar" data-alt="close-up portrait of a professional male scholar in a library with soft warm background lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAVK1NaRBebhaIyUhcLxkHJ6AB5xyqvqRbbCJHOmk_eFWRbuZGS8txF93pD1qiAQCTaVDlMX_LrJWCbvuOET0zbSt4jC9hcuYz-ASULc57RYgCp-Qs4uFYgMX57t3J1bWMcEvppakrR8WYO63NHTIil2H78Spfu_9J00Cuj6P9nxEmluxz8N5NsMvMXZkGZXJzmW4jDC39a_vYmLPoE72rPT6_MfK-hmOhCLKKz1DmJgkwtbLmJ7feaTt_aB3TBHa-Cpw14YaK8vpA"/>
+</div>
+</div>
+</header>
+<!-- Content Area: The Manuscript Surface -->
+<section class="p-12 flex-grow">
+<div class="max-w-5xl mx-auto bg-surface-container-lowest manuscript-shadow rounded-xl min-h-[1200px] flex flex-col relative overflow-hidden">
+<!-- Metadata Header -->
+<div class="p-16 pb-12 border-b border-surface-container-low">
+<div class="asymmetric-margin">
+<span class="px-3 py-1 bg-secondary-container text-on-secondary-container text-[10px] font-bold uppercase tracking-widest rounded-full">Primary Analysis • Manuscript ID: #4829</span>
+<h2 class="mt-6 text-5xl font-headline font-extrabold text-on-surface leading-tight tracking-tight">
+              Molecular mechanisms of protein aggregation in neurodegenerative pathology
+            </h2>
+<div class="mt-8 flex gap-8 items-center">
+<div class="flex flex-col">
+<span class="text-xs text-on-surface-variant font-medium uppercase tracking-wider">Lead Authors</span>
+<span class="text-on-surface font-semibold">Dr. Elena Rostova, Mark J. Sutherland</span>
+</div>
+<div class="w-px h-8 bg-surface-container-highest"></div>
+<div class="flex flex-col">
+<span class="text-xs text-on-surface-variant font-medium uppercase tracking-wider">Journal Citation</span>
+<span class="text-on-surface font-semibold italic">Nature Structural &amp; Molecular Biology (2024)</span>
+</div>
+</div>
+<div class="mt-10 max-w-2xl">
+<p class="text-on-surface-variant leading-relaxed italic text-lg">
+                "This study characterizes the early-stage misfolding kinetics of alpha-synuclein using high-resolution cryo-electron microscopy and molecular dynamic simulations..."
+              </p>
+</div>
+</div>
+</div>
+<!-- Workbench Body -->
+<div class="flex flex-grow">
+<!-- Sidebar Annotations / Marginalia -->
+<div class="w-1/4 border-r border-surface-container-low p-8 bg-surface-container-low/30">
+<h4 class="text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant mb-6">Extraction Workbench</h4>
+<!-- Entity Recognition -->
+<div class="space-y-8">
+<div>
+<h5 class="text-xs font-bold text-primary flex items-center gap-2 mb-4">
+<span class="material-symbols-outlined text-sm">genetics</span> Proteins
+                </h5>
+<ul class="space-y-2">
+<li class="px-3 py-2 bg-surface rounded-lg text-xs font-medium border border-outline-variant/10 shadow-sm flex items-center justify-between">
+                    Alpha-synuclein
+                    <span class="w-2 h-2 rounded-full bg-primary/40"></span>
+</li>
+<li class="px-3 py-2 bg-surface rounded-lg text-xs font-medium border border-outline-variant/10 shadow-sm flex items-center justify-between">
+                    Tau-441
+                    <span class="w-2 h-2 rounded-full bg-primary/40"></span>
+</li>
+<li class="px-3 py-2 bg-surface rounded-lg text-xs font-medium border border-outline-variant/10 shadow-sm flex items-center justify-between">
+                    Hsp70 Chaperone
+                    <span class="w-2 h-2 rounded-full bg-primary/40"></span>
+</li>
+</ul>
+</div>
+<div>
+<h5 class="text-xs font-bold text-tertiary-container flex items-center gap-2 mb-4">
+<span class="material-symbols-outlined text-sm">coronavirus</span> Pathologies
+                </h5>
+<ul class="space-y-2">
+<li class="px-3 py-2 bg-surface rounded-lg text-xs font-medium border border-outline-variant/10 shadow-sm">Parkinson's Disease</li>
+<li class="px-3 py-2 bg-surface rounded-lg text-xs font-medium border border-outline-variant/10 shadow-sm">Lewy Body Dementia</li>
+</ul>
+</div>
+</div>
+</div>
+<!-- Main Text Column -->
+<div class="w-3/4 p-16 pt-12">
+<div class="space-y-12">
+<!-- AI Summarization Section -->
+<section>
+<div class="flex items-center gap-3 mb-6">
+<span class="material-symbols-outlined text-tertiary-container" data-weight="fill">auto_awesome</span>
+<h3 class="font-headline text-xl font-bold">Consolidated AI Synthesis</h3>
+</div>
+<div class="prose prose-slate max-w-none space-y-6">
+<p class="text-on-surface leading-[1.8] text-lg">
+                    The authors present a compelling case for the role of <span class="bg-primary/5 text-primary border-b-2 border-primary/20 px-1 font-semibold">interfacial water molecules</span> in stabilizing the hydrophobic core of amyloid fibrils. Unlike previous models, this analysis suggests that hydration shells are not purely disruptive but provide a structural scaffold during initial nucleation phases (Rostova et al., 2024).
+                  </p>
+<p class="text-on-surface leading-[1.8] text-lg">
+                    Key findings emphasize the <span class="bg-tertiary-container/5 text-tertiary-container border-b-2 border-tertiary-container/20 px-1 font-semibold">rate-limiting transition</span> between amorphous oligomers and highly ordered beta-sheet structures. This transition was monitored across a pH gradient from 5.5 to 7.4, revealing a critical instability window in lysosomal-like environments.
+                  </p>
+</div>
+</section>
+<!-- Relationship Mapping Placeholder -->
+<section class="mt-16">
+<div class="flex items-center justify-between mb-8">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">account_tree</span>
+<h3 class="font-headline text-xl font-bold">Concept Relationship Mapping</h3>
+</div>
+<span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Interactive Network</span>
+</div>
+<div class="w-full h-80 bg-surface-container-low rounded-xl border border-outline-variant/15 flex items-center justify-center relative overflow-hidden">
+<!-- Abstract Visualization -->
+<div class="absolute inset-0 opacity-10 pointer-events-none" style="background-image: radial-gradient(#00288e 1px, transparent 1px); background-size: 24px 24px;"></div>
+<div class="relative w-full h-full flex items-center justify-center">
+<!-- Nodes -->
+<div class="absolute top-1/4 left-1/4 w-24 h-24 rounded-full bg-white shadow-xl flex items-center justify-center p-4 text-center text-[10px] font-bold border border-primary/10">Alpha-Synuclein</div>
+<div class="absolute bottom-1/3 right-1/3 w-32 h-32 rounded-full bg-primary text-white shadow-2xl flex items-center justify-center p-6 text-center text-xs font-bold">Hydrophobic Collapse</div>
+<div class="absolute top-1/3 right-1/4 w-20 h-20 rounded-full bg-white shadow-lg flex items-center justify-center p-3 text-center text-[10px] font-bold border border-primary/10">Fibril Stability</div>
+<!-- Connection Lines (SVG) -->
+<svg class="absolute inset-0 w-full h-full pointer-events-none">
+<line opacity="0.3" stroke="#00288e" stroke-dasharray="4 4" stroke-width="1.5" x1="25%" x2="66%" y1="25%" y2="66%"></line>
+<line opacity="0.5" stroke="#00288e" stroke-width="2" x1="66%" x2="75%" y1="66%" y2="33%"></line>
+</svg>
+</div>
+</div>
+</section>
+</div>
+</div>
+</div>
+<!-- Sticky Bottom Action Bar -->
+<div class="sticky bottom-0 left-0 right-0 glass-panel border-t border-surface-container-high p-6 flex justify-between items-center z-40">
+<div class="flex items-center gap-4">
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">share</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">bookmark</span>
+</button>
+<span class="w-px h-6 bg-surface-container-highest"></span>
+<span class="text-xs font-medium text-on-surface-variant">Last edited 2m ago by AI Assistant</span>
+</div>
+<div class="flex items-center gap-3">
+<button class="px-6 py-2.5 text-on-surface font-semibold text-sm hover:bg-surface-container transition-colors rounded-lg">
+              Export Analysis
+            </button>
+<button class="px-6 py-2.5 bg-surface-container-high text-primary font-semibold text-sm rounded-lg hover:bg-surface-container-highest transition-all">
+              Build Knowledge Graph
+            </button>
+<button class="px-8 py-2.5 bg-primary text-on-primary font-bold text-sm rounded-lg shadow-lg shadow-primary/20 flex items-center gap-2 group transition-all">
+              Next Step
+              <span class="material-symbols-outlined text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Floating AI Prompt (Context Sensitive) -->
+<div class="fixed bottom-24 right-12 w-80 glass-panel manuscript-shadow rounded-2xl p-4 border border-white/50 z-50">
+<div class="flex items-center gap-2 mb-3">
+<span class="material-symbols-outlined text-primary text-lg" data-weight="fill">colors_spark</span>
+<span class="text-xs font-bold text-on-surface uppercase tracking-wider">Research Context</span>
+</div>
+<p class="text-xs text-on-surface-variant leading-relaxed">
+        Would you like to cross-reference this finding with your <span class="text-primary font-semibold">2023 Alzheimer's project</span>?
+      </p>
+<div class="mt-4 flex gap-2">
+<button class="flex-grow py-2 bg-primary/5 text-primary text-[10px] font-bold rounded-lg hover:bg-primary/10">Yes, compare</button>
+<button class="px-3 py-2 text-on-surface-variant hover:bg-surface-container rounded-lg"><span class="material-symbols-outlined text-sm">close</span></button>
+</div>
+</div>
+</main>
+</body></html>

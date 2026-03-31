@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Scholarly AI - Your Research Companion</title>
+<!-- Google Fonts: Manrope for headlines, Inter for body/UI -->
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "on-background": "#1b1c1a",
+              "tertiary-container": "#872d00",
+              "on-tertiary": "#ffffff",
+              "on-tertiary-fixed": "#380d00",
+              "on-secondary": "#ffffff",
+              "on-secondary-container": "#57657a",
+              "outline-variant": "#c4c5d5",
+              "inverse-surface": "#30312e",
+              "surface-dim": "#dbdad6",
+              "on-error-container": "#93000a",
+              "secondary-fixed": "#d5e3fc",
+              "primary-fixed-dim": "#b8c4ff",
+              "primary-fixed": "#dde1ff",
+              "inverse-on-surface": "#f2f0ed",
+              "primary": "#00288e",
+              "background": "#fbf9f5",
+              "surface": "#fbf9f5",
+              "on-tertiary-fixed-variant": "#802a00",
+              "on-surface-variant": "#444653",
+              "on-primary-fixed-variant": "#173bab",
+              "error": "#ba1a1a",
+              "on-tertiary-container": "#ffa583",
+              "surface-container-highest": "#e4e2de",
+              "on-primary-container": "#a8b8ff",
+              "on-primary-fixed": "#001453",
+              "outline": "#757684",
+              "secondary": "#515f74",
+              "surface-tint": "#3755c3",
+              "surface-container-low": "#f5f3ef",
+              "on-surface": "#1b1c1a",
+              "tertiary": "#611e00",
+              "inverse-primary": "#b8c4ff",
+              "surface-container": "#efeeea",
+              "tertiary-fixed": "#ffdbce",
+              "tertiary-fixed-dim": "#ffb59a",
+              "on-error": "#ffffff",
+              "error-container": "#ffdad6",
+              "on-secondary-fixed": "#0d1c2e",
+              "surface-container-lowest": "#ffffff",
+              "secondary-container": "#d5e3fc",
+              "surface-bright": "#fbf9f5",
+              "surface-variant": "#e4e2de",
+              "secondary-fixed-dim": "#b9c7df",
+              "primary-container": "#1e40af",
+              "surface-container-high": "#eae8e4",
+              "on-secondary-fixed-variant": "#3a485b",
+              "on-primary": "#ffffff"
+            },
+            fontFamily: {
+              "headline": ["Manrope"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            line-height: 1;
+            text-transform: none;
+            letter-spacing: normal;
+            word-wrap: normal;
+            white-space: nowrap;
+            direction: ltr;
+        }
+        .graph-overlay {
+            background-image: radial-gradient(circle at 2px 2px, rgba(255,255,255,0.05) 1px, transparent 0);
+            background-size: 40px 40px;
+        }
+    </style>
+</head>
+<body class="bg-surface font-body text-on-surface antialiased">
+<main class="flex min-h-screen">
+<!-- Left Side: Visual & Branding Anchor -->
+<section class="relative hidden w-1/2 flex-col justify-between bg-primary-container p-16 lg:flex overflow-hidden">
+<!-- Decorative Graph Elements -->
+<div class="absolute inset-0 graph-overlay pointer-events-none opacity-40"></div>
+<div class="absolute -right-20 -top-20 h-96 w-96 rounded-full bg-primary-fixed-dim/10 blur-3xl"></div>
+<div class="absolute -left-20 -bottom-20 h-96 w-96 rounded-full bg-primary/20 blur-3xl"></div>
+<!-- Identity Header -->
+<div class="relative z-10 flex items-center gap-3">
+<div class="flex h-10 w-10 items-center justify-center rounded-xl bg-surface-container-lowest text-primary shadow-sm">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">auto_stories</span>
+</div>
+<h1 class="font-headline text-2xl font-extrabold tracking-tighter text-surface-container-lowest">
+                    The Digital Atelier
+                </h1>
+</div>
+<!-- Central Content -->
+<div class="relative z-10 max-w-lg">
+<h2 class="font-headline text-5xl font-bold leading-tight text-white mb-6">
+                    让大模型成为你的科研文献分析助手
+                </h2>
+<p class="text-lg text-primary-fixed leading-relaxed opacity-90">
+                    Scholarly AI - Your Research Companion. Transform complex literature reviews into structured academic insights with professional precision.
+                </p>
+</div>
+<!-- Footer Quote / Detail -->
+<div class="relative z-10">
+<div class="flex gap-4">
+<div class="h-px w-12 bg-primary-fixed-dim/30 mt-3"></div>
+<p class="text-sm font-medium tracking-wide text-primary-fixed-dim/80 uppercase">
+                        Empowering Academia through Neural Synthesis
+                    </p>
+</div>
+</div>
+<!-- Stylized Abstract Visualization -->
+<div class="absolute bottom-0 right-0 w-full h-1/2">
+<div class="flex items-end justify-end h-full p-12 opacity-20">
+<div class="grid grid-cols-4 gap-4 items-end">
+<div class="h-32 w-2 bg-white rounded-full"></div>
+<div class="h-48 w-2 bg-white rounded-full"></div>
+<div class="h-24 w-2 bg-white rounded-full"></div>
+<div class="h-40 w-2 bg-white rounded-full"></div>
+</div>
+</div>
+</div>
+</section>
+<!-- Right Side: Login Canvas -->
+<section class="flex flex-1 flex-col items-center justify-center bg-surface px-8 lg:px-24">
+<div class="w-full max-w-md">
+<!-- Mobile Branding -->
+<div class="mb-12 flex flex-col items-center lg:hidden">
+<div class="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary text-white">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">auto_stories</span>
+</div>
+<h2 class="font-headline text-2xl font-bold text-on-surface">Scholarly AI</h2>
+</div>
+<!-- Form Header -->
+<div class="mb-10">
+<h3 class="font-headline text-3xl font-bold tracking-tight text-on-surface mb-2">Welcome Back</h3>
+<p class="text-on-surface-variant">Continue your curated research manuscript.</p>
+</div>
+<!-- Tabs -->
+<div class="mb-8 flex space-x-8 border-b border-surface-container-highest">
+<button class="border-b-2 border-primary pb-4 font-headline text-sm font-bold text-primary">
+                        Email Login
+                    </button>
+<button class="pb-4 font-headline text-sm font-medium text-on-surface-variant hover:text-on-surface transition-colors">
+                        Verification Code
+                    </button>
+</div>
+<!-- Input Fields -->
+<form class="space-y-6">
+<div class="space-y-2">
+<label class="font-label text-xs font-semibold uppercase tracking-wider text-on-surface-variant opacity-70" for="email">Institutional Email</label>
+<div class="relative">
+<input class="w-full rounded-xl border-none bg-surface-container-low px-4 py-4 text-on-surface transition-all focus:bg-white focus:ring-2 focus:ring-primary/20 placeholder:text-on-secondary-container/40" id="email" placeholder="name@university.edu" type="email"/>
+</div>
+</div>
+<div class="space-y-2">
+<div class="flex items-center justify-between">
+<label class="font-label text-xs font-semibold uppercase tracking-wider text-on-surface-variant opacity-70" for="password">Security Password</label>
+<a class="text-xs font-medium text-primary hover:underline" href="#">Forgot?</a>
+</div>
+<div class="relative">
+<input class="w-full rounded-xl border-none bg-surface-container-low px-4 py-4 text-on-surface transition-all focus:bg-white focus:ring-2 focus:ring-primary/20 placeholder:text-on-secondary-container/40" id="password" placeholder="••••••••" type="password"/>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<input class="h-4 w-4 rounded-sm border-outline-variant text-primary focus:ring-primary/30" id="remember" type="checkbox"/>
+<label class="text-sm font-medium text-on-surface-variant" for="remember">Keep me authenticated</label>
+</div>
+<button class="w-full rounded-xl bg-primary px-6 py-4 font-headline font-bold text-white shadow-lg shadow-primary/20 transition-all hover:translate-y-[-2px] hover:shadow-xl active:scale-95" type="submit">
+                        Access Library
+                    </button>
+</form>
+<!-- Social/OIDC Integration -->
+<div class="mt-10">
+<div class="relative mb-8">
+<div class="absolute inset-0 flex items-center">
+<div class="w-full border-t border-surface-container-highest"></div>
+</div>
+<div class="relative flex justify-center text-xs uppercase tracking-widest">
+<span class="bg-surface px-4 text-on-surface-variant opacity-50">Or authenticate with</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<button class="flex items-center justify-center gap-3 rounded-xl border border-outline-variant/30 bg-surface-container-lowest py-3.5 text-sm font-semibold text-on-surface transition-all hover:bg-surface-container-low">
+<img alt="Google" class="h-4 w-4" data-alt="minimalist icon of the google colorful G logo on a white background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAukAbw_oystAxXO1a3WZkjcMxgmbgqEQ_vXPT3DitIC06otFxUJimBGpOJvaEAYsI31wVw3r5tYupaC2xIwE0llA2kOjs-EyQoBEytZq5rDmCaLNhwHzO0Cj3k_sQESuZmY4Qa98D7x2Lv5oR1Xz0YY1vV4giLVQhItGhXOwc9mu5Oaz15XxBwI8KZeHLbG-KabLAkzB4aXzDdhI0Bieo8LnPOlc_REBwUmiS4iB21R0UUThryAssFLR96euBsfTFUno0kWw_Wxa0"/>
+                            Google
+                        </button>
+<button class="flex items-center justify-center gap-3 rounded-xl border border-outline-variant/30 bg-surface-container-lowest py-3.5 text-sm font-semibold text-on-surface transition-all hover:bg-surface-container-low">
+<img alt="GitHub" class="h-4 w-4 dark:invert" data-alt="black and white github octocat logo icon" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBRXcScOPwfXH1-tFBMF5hGC9b_-M7i9Ck75CFg5GEIGozPprmubxYN7IAtfzAzEBvt8BxLy-tYn5iaiSjxTprfQfs9K1A85pfFda5OCwZQj_PSymKUADb_NH-j6bO3lGxWn4SQeLfPa71ydJ0NQ_WF6xM3VdDGC7tyPUPwOcwteRRXe4Z2dwgez_LZIheVPLqycpqMlwxVGENZz54OTSWl_ENHEI-375bSIJ2boNN-zfCVZBiyRd4uaTW1pdPJSkKZOQ4WQqDctks"/>
+                            GitHub
+                        </button>
+</div>
+</div>
+<!-- Sign up Link -->
+<p class="mt-12 text-center text-sm text-on-surface-variant">
+                    New to the atelier? 
+                    <a class="font-bold text-primary hover:underline" href="#">Request an invitation</a>
+</p>
+</div>
+<!-- Support Footer -->
+<footer class="mt-12 flex gap-6 text-xs text-on-surface-variant opacity-60">
+<a class="hover:text-primary transition-colors" href="#">Privacy Policy</a>
+<a class="hover:text-primary transition-colors" href="#">Terms of Service</a>
+<a class="hover:text-primary transition-colors" href="#">Contact Support</a>
+</footer>
+</section>
+</main>
+<!-- Background Decoration for Right Side -->
+<div class="fixed top-0 right-0 p-8 pointer-events-none hidden lg:block">
+<div class="flex items-center gap-2 opacity-10">
+<span class="material-symbols-outlined text-4xl">ink_pen</span>
+<div class="font-headline text-lg font-bold">SCHOLARLY AI</div>
+</div>
+</div>
+</body></html>

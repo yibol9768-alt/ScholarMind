@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Research Workflow | The Digital Atelier</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Manrope:wght@600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "on-background": "#1b1c1a",
+              "tertiary-container": "#872d00",
+              "on-tertiary": "#ffffff",
+              "on-tertiary-fixed": "#380d00",
+              "on-secondary": "#ffffff",
+              "on-secondary-container": "#57657a",
+              "outline-variant": "#c4c5d5",
+              "inverse-surface": "#30312e",
+              "surface-dim": "#dbdad6",
+              "on-error-container": "#93000a",
+              "secondary-fixed": "#d5e3fc",
+              "primary-fixed-dim": "#b8c4ff",
+              "primary-fixed": "#dde1ff",
+              "inverse-on-surface": "#f2f0ed",
+              "primary": "#00288e",
+              "background": "#fbf9f5",
+              "surface": "#fbf9f5",
+              "on-tertiary-fixed-variant": "#802a00",
+              "on-surface-variant": "#444653",
+              "on-primary-fixed-variant": "#173bab",
+              "error": "#ba1a1a",
+              "on-tertiary-container": "#ffa583",
+              "surface-container-highest": "#e4e2de",
+              "on-primary-container": "#a8b8ff",
+              "on-primary-fixed": "#001453",
+              "outline": "#757684",
+              "secondary": "#515f74",
+              "surface-tint": "#3755c3",
+              "surface-container-low": "#f5f3ef",
+              "on-surface": "#1b1c1a",
+              "tertiary": "#611e00",
+              "inverse-primary": "#b8c4ff",
+              "surface-container": "#efeeea",
+              "tertiary-fixed": "#ffdbce",
+              "tertiary-fixed-dim": "#ffb59a",
+              "on-error": "#ffffff",
+              "error-container": "#ffdad6",
+              "on-secondary-fixed": "#0d1c2e",
+              "surface-container-lowest": "#ffffff",
+              "secondary-container": "#d5e3fc",
+              "surface-bright": "#fbf9f5",
+              "surface-variant": "#e4e2de",
+              "secondary-fixed-dim": "#b9c7df",
+              "primary-container": "#1e40af",
+              "surface-container-high": "#eae8e4",
+              "on-secondary-fixed-variant": "#3a485b",
+              "on-primary": "#ffffff"
+            },
+            fontFamily: {
+              "headline": ["Manrope"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+        }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #e4e2de; border-radius: 10px; }
+    </style>
+</head>
+<body class="bg-background font-body text-on-surface">
+<!-- TopAppBar -->
+<header class="fixed top-0 z-50 w-full flex justify-between items-center px-8 py-3 bg-[#fbf9f5] dark:bg-slate-900 transition-colors duration-200">
+<div class="flex items-center gap-8">
+<span class="text-xl font-bold text-[#1e40af] dark:text-blue-300 tracking-tighter font-headline">The Digital Atelier</span>
+<nav class="hidden md:flex gap-6 items-center">
+<a class="font-manrope text-sm font-semibold tracking-tight text-slate-500 dark:text-slate-400 hover:text-[#1e40af] hover:bg-[#f5f3ef] dark:hover:bg-slate-800 transition-colors duration-200" href="#">Dashboard</a>
+<a class="font-manrope text-sm font-semibold tracking-tight text-slate-500 dark:text-slate-400 hover:text-[#1e40af] hover:bg-[#f5f3ef] dark:hover:bg-slate-800 transition-colors duration-200" href="#">Library</a>
+<a class="font-manrope text-sm font-semibold tracking-tight text-[#1e40af] dark:text-blue-400 border-b-2 border-[#1e40af] pb-1" href="#">Analysis</a>
+<a class="font-manrope text-sm font-semibold tracking-tight text-slate-500 dark:text-slate-400 hover:text-[#1e40af] hover:bg-[#f5f3ef] dark:hover:bg-slate-800 transition-colors duration-200" href="#">Archive</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined p-2 rounded-full hover:bg-[#f5f3ef] transition-colors scale-95 active:scale-90" data-icon="notifications">notifications</button>
+<button class="material-symbols-outlined p-2 rounded-full hover:bg-[#f5f3ef] transition-colors scale-95 active:scale-90" data-icon="history_edu">history_edu</button>
+<div class="w-8 h-8 rounded-full overflow-hidden bg-surface-container-highest">
+<img class="w-full h-full object-cover" data-alt="Close up portrait of a scholar with a thoughtful expression in a library setting with warm academic lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBm-6f716Mbmm_17TDU4VDcHQNef__eErTwEa3sw-n9VgbZIPUJqNLQzRCvYzvf0yFivufQiJH-u6K65cwNu3cOrD9022FJuK28l73hbI1n3wu5GUAOKQet1bD1yRSS67WDwur2ujvEGbFKxtr6qkChbxt7b1sbWdBc2JvG4dt-cVL8oqE6AKmL5YA5E1LOa0LquRKbOs8DH68n0ghDKJ-RbEEopS27RKuy_DFWkmsY5wkFgXh_MNF4KhtHb92mDFe78hJBgK7oY4s"/>
+</div>
+</div>
+</header>
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-0 h-full w-72 bg-[#f5f3ef] dark:bg-slate-950 flex flex-col p-4 gap-2 pt-20 border-r-0 z-40 hidden md:flex">
+<div class="mb-8 px-2">
+<h2 class="font-manrope font-extrabold text-[#1e40af] text-lg">Research Studio</h2>
+<p class="text-xs text-on-surface-variant font-medium">The Curated Manuscript</p>
+</div>
+<nav class="flex flex-col gap-1">
+<a class="flex items-center gap-3 p-3 text-slate-600 dark:text-slate-400 hover:bg-[#fbf9f5] dark:hover:bg-slate-900/50 rounded-lg hover:translate-x-1 transition-all duration-200 font-manrope text-sm font-medium" href="#">
+<span class="material-symbols-outlined" data-icon="chat">chat</span> Today
+            </a>
+<a class="flex items-center gap-3 p-3 text-slate-600 dark:text-slate-400 hover:bg-[#fbf9f5] dark:hover:bg-slate-900/50 rounded-lg hover:translate-x-1 transition-all duration-200 font-manrope text-sm font-medium" href="#">
+<span class="material-symbols-outlined" data-icon="history">history</span> Last 7 Days
+            </a>
+<a class="flex items-center gap-3 p-3 bg-[#ffffff] dark:bg-slate-900 text-[#1e40af] dark:text-blue-300 rounded-lg shadow-sm font-bold font-manrope text-sm" href="#">
+<span class="material-symbols-outlined" data-icon="menu_book">menu_book</span> Research Papers
+            </a>
+<a class="flex items-center gap-3 p-3 text-slate-600 dark:text-slate-400 hover:bg-[#fbf9f5] dark:hover:bg-slate-900/50 rounded-lg hover:translate-x-1 transition-all duration-200 font-manrope text-sm font-medium" href="#">
+<span class="material-symbols-outlined" data-icon="psychology">psychology</span> Methodology
+            </a>
+</nav>
+<div class="mt-8 px-2">
+<button class="w-full bg-primary py-3 px-4 text-on-primary rounded-xl font-headline text-sm font-bold hover:shadow-lg transition-all scale-95 active:scale-90 flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-sm" data-icon="add">add</span>
+                New Analysis
+            </button>
+</div>
+<div class="mt-auto border-t border-surface-container-highest pt-4">
+<a class="flex items-center gap-3 p-3 text-slate-600 dark:text-slate-400 hover:bg-[#fbf9f5] rounded-lg font-manrope text-sm font-medium" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span> Settings
+            </a>
+<a class="flex items-center gap-3 p-3 text-slate-600 dark:text-slate-400 hover:bg-[#fbf9f5] rounded-lg font-manrope text-sm font-medium" href="#">
+<span class="material-symbols-outlined" data-icon="help_outline">help_outline</span> Help
+            </a>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="md:ml-72 pt-24 px-8 pb-12 min-h-screen">
+<header class="mb-12 max-w-5xl mx-auto">
+<div class="flex justify-between items-end gap-4">
+<div class="space-y-2">
+<span class="text-tertiary-container font-headline font-bold text-xs uppercase tracking-widest">Active Pipeline</span>
+<h1 class="text-4xl font-headline font-extrabold text-on-surface tracking-tight">Quantum Computing Methodology</h1>
+<p class="text-on-surface-variant max-w-xl text-lg leading-relaxed">Visualizing the full lifecycle of your academic inquiry from initial domain scan to traceable publication.</p>
+</div>
+<div class="flex gap-2">
+<span class="bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full text-xs font-bold font-label flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]" data-icon="update">update</span> Last sync 2m ago
+                    </span>
+</div>
+</div>
+</header>
+<!-- Workflow Visualization -->
+<div class="max-w-7xl mx-auto">
+<!-- Asymmetric Horizontal Flow Scrollable -->
+<div class="flex gap-8 overflow-x-auto pb-12 px-2 snap-x">
+<!-- Step 1 -->
+<div class="flex-none w-80 snap-start">
+<div class="mb-4 flex items-center gap-3">
+<span class="w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center font-headline font-bold text-sm">01</span>
+<div class="h-[2px] flex-grow bg-surface-container-highest"></div>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm hover:shadow-md transition-all border border-transparent hover:border-primary/10">
+<div class="flex justify-between items-start mb-6">
+<span class="bg-green-100 text-green-800 px-2 py-0.5 rounded text-[10px] font-bold uppercase">Completed</span>
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="explore">explore</span>
+</div>
+<h3 class="font-headline font-bold text-lg mb-2">Domain Exploration</h3>
+<p class="text-sm text-on-surface-variant mb-6 leading-relaxed">Mapping topological features of quantum gate architectures across recent pre-prints.</p>
+<div class="flex -space-x-2">
+<img class="w-6 h-6 rounded-full border-2 border-surface-container-lowest" data-alt="Portrait of woman scientist" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB2GNRviZNFf7piZkKO-jbjF6UvA4MODaT2nEQxZiQ-6d6LPCg9Lx7jhkq5Hk_rYAjGdhJoPa3XPdE0hKdbZZi1gfuB5jNeurw7v9mS5g5p25X8h1eJBlwKKMAxZ6PgB9HqFhpEBLx0qHwq3McYC6QPgPiF8yuNlNvJYzritb0OEn_0-QXJHFAxTk42MP8sgizfvPUShW5O7igvtQTza9c28pNNWoRbgAhHByiK9azykV7Z0cfm71jzMw0GVUo3S5HndTMiVyFZDIk"/>
+<div class="w-6 h-6 rounded-full bg-primary-container text-[8px] flex items-center justify-center text-on-primary-container border-2 border-surface-container-lowest font-bold">AI</div>
+</div>
+</div>
+</div>
+<!-- Step 2 -->
+<div class="flex-none w-80 snap-start">
+<div class="mb-4 flex items-center gap-3">
+<span class="w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center font-headline font-bold text-sm">02</span>
+<div class="h-[2px] flex-grow bg-surface-container-highest"></div>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm hover:shadow-md transition-all border border-transparent">
+<div class="flex justify-between items-start mb-6">
+<span class="bg-green-100 text-green-800 px-2 py-0.5 rounded text-[10px] font-bold uppercase">Completed</span>
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="search_insights">search_insights</span>
+</div>
+<h3 class="font-headline font-bold text-lg mb-2">DeepResearch</h3>
+<p class="text-sm text-on-surface-variant mb-6 leading-relaxed">1,240 documents acquired. Literature semantic graph generated.</p>
+<div class="bg-surface-container-low p-3 rounded-lg flex items-center gap-3">
+<span class="material-symbols-outlined text-primary text-sm" data-icon="article">article</span>
+<span class="text-[10px] font-bold text-on-secondary-container">2.4GB Data Lake</span>
+</div>
+</div>
+</div>
+<!-- Step 3 -->
+<div class="flex-none w-80 snap-start">
+<div class="mb-4 flex items-center gap-3">
+<span class="w-8 h-8 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-headline font-bold text-sm">03</span>
+<div class="h-[2px] flex-grow bg-surface-container-highest"></div>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl shadow-md border-2 border-primary/20 scale-105">
+<div class="flex justify-between items-start mb-6">
+<span class="bg-primary-container text-on-primary-container px-2 py-0.5 rounded text-[10px] font-bold uppercase animate-pulse">In Progress</span>
+<span class="material-symbols-outlined text-primary" data-icon="priority_high">priority_high</span>
+</div>
+<h3 class="font-headline font-bold text-lg mb-2">Gap Identification</h3>
+<p class="text-sm text-on-surface-variant mb-4 leading-relaxed">Analyzing missing links in cryogenic error correction protocols.</p>
+<div class="space-y-2">
+<div class="w-full bg-surface-container-high h-1.5 rounded-full overflow-hidden">
+<div class="bg-primary w-2/3 h-full"></div>
+</div>
+<span class="text-[10px] font-bold text-primary">65% Analyzing nodes</span>
+</div>
+</div>
+</div>
+<!-- Step 4 -->
+<div class="flex-none w-80 snap-start">
+<div class="mb-4 flex items-center gap-3">
+<span class="w-8 h-8 rounded-full bg-surface-container-highest text-on-surface-variant flex items-center justify-center font-headline font-bold text-sm">04</span>
+<div class="h-[2px] flex-grow bg-surface-container-highest"></div>
+</div>
+<div class="bg-surface-container-low p-6 rounded-xl border border-dashed border-outline-variant opacity-75">
+<div class="flex justify-between items-start mb-6">
+<span class="bg-surface-container-high text-on-surface-variant px-2 py-0.5 rounded text-[10px] font-bold uppercase">Pending</span>
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="star_outline">star_outline</span>
+</div>
+<h3 class="font-headline font-bold text-lg mb-2">Idea Scoring</h3>
+<p class="text-sm text-on-surface-variant mb-6 leading-relaxed">Bayesian ranking of potential experimental novelties.</p>
+</div>
+</div>
+<!-- Step 5 -->
+<div class="flex-none w-80 snap-start">
+<div class="mb-4 flex items-center gap-3">
+<span class="w-8 h-8 rounded-full bg-surface-container-highest text-on-surface-variant flex items-center justify-center font-headline font-bold text-sm">05</span>
+<div class="h-[2px] flex-grow bg-surface-container-highest"></div>
+</div>
+<div class="bg-surface-container-low p-6 rounded-xl border border-dashed border-outline-variant opacity-75">
+<div class="flex justify-between items-start mb-6">
+<span class="bg-surface-container-high text-on-surface-variant px-2 py-0.5 rounded text-[10px] font-bold uppercase">Pending</span>
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="terminal">terminal</span>
+</div>
+<h3 class="font-headline font-bold text-lg mb-2">Code Repository Gen</h3>
+<p class="text-sm text-on-surface-variant mb-6 leading-relaxed">Auto-structuring Python simulation environment.</p>
+</div>
+</div>
+</div>
+<!-- Bento Detailed Analysis Area -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8 mt-4">
+<div class="md:col-span-2 bg-surface-container-lowest p-8 rounded-xl shadow-sm border border-surface-container-low">
+<div class="flex justify-between items-center mb-8">
+<h2 class="font-headline font-bold text-2xl tracking-tight">Step Detail: Gap Identification</h2>
+<button class="text-primary text-sm font-bold flex items-center gap-1 hover:underline">
+                            Open full workspace <span class="material-symbols-outlined text-sm" data-icon="open_in_new">open_in_new</span>
+</button>
+</div>
+<div class="grid grid-cols-2 gap-8">
+<div class="space-y-6">
+<div>
+<h4 class="text-xs font-bold text-on-secondary-container uppercase tracking-wider mb-2">Current Activity</h4>
+<div class="p-4 bg-surface-container-low rounded-lg border-l-4 border-primary">
+<p class="text-sm font-medium leading-relaxed">Cross-referencing "Decoherence" datasets against "Surface Code" topologies.</p>
+</div>
+</div>
+<div class="space-y-3">
+<h4 class="text-xs font-bold text-on-secondary-container uppercase tracking-wider">Discovered Anomalies</h4>
+<div class="flex items-center gap-3 p-2 bg-tertiary-fixed text-on-tertiary-fixed rounded-lg">
+<span class="material-symbols-outlined text-sm" data-icon="auto_awesome">auto_awesome</span>
+<span class="text-xs font-bold">New Gap: Non-linear error scaling in NbTi junctions</span>
+</div>
+<div class="flex items-center gap-3 p-2 bg-secondary-container text-on-secondary-container rounded-lg">
+<span class="material-symbols-outlined text-sm" data-icon="link">link</span>
+<span class="text-xs font-bold">Conflict: Chen et al. vs Yamamoto (2023)</span>
+</div>
+</div>
+</div>
+<div class="bg-surface p-4 rounded-xl border border-surface-container-highest flex flex-col items-center justify-center text-center">
+<div class="mb-4 relative">
+<svg class="w-32 h-32 transform -rotate-90">
+<circle class="text-surface-container-highest" cx="64" cy="64" fill="transparent" r="58" stroke="currentColor" stroke-width="8"></circle>
+<circle class="text-primary transition-all duration-1000" cx="64" cy="64" fill="transparent" r="58" stroke="currentColor" stroke-dasharray="364.4" stroke-dashoffset="127.5" stroke-width="8"></circle>
+</svg>
+<div class="absolute inset-0 flex flex-col items-center justify-center">
+<span class="text-2xl font-headline font-extrabold">65%</span>
+<span class="text-[8px] font-bold text-on-surface-variant uppercase">Confidence</span>
+</div>
+</div>
+<p class="text-xs text-on-surface-variant leading-relaxed">Analyzing 4,200 cross-node dependencies within the manuscript.</p>
+</div>
+</div>
+</div>
+<div class="bg-[#1e40af] text-white p-8 rounded-xl shadow-xl flex flex-col relative overflow-hidden">
+<!-- Subtle pattern overlay -->
+<div class="absolute inset-0 opacity-10 pointer-events-none" style="background-image: radial-gradient(#ffffff 1px, transparent 1px); background-size: 20px 20px;"></div>
+<h2 class="font-headline font-bold text-xl mb-4 relative z-10">AI Strategy Insight</h2>
+<p class="text-blue-100 text-sm leading-relaxed mb-8 relative z-10">"The current focus on niobium-titanium might be redundant. Transition to investigating aluminum-oxide dielectric losses for higher impact scoring."</p>
+<div class="mt-auto relative z-10">
+<button class="w-full bg-white text-primary py-3 rounded-lg font-bold text-sm hover:bg-blue-50 transition-colors flex items-center justify-center gap-2">
+                            Apply Strategy Pivot <span class="material-symbols-outlined text-sm" data-icon="bolt">bolt</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Future Steps Grid (6-10) -->
+<div class="grid grid-cols-2 md:grid-cols-5 gap-4 mt-8">
+<!-- Experiment Design -->
+<div class="bg-surface-container-low p-4 rounded-xl border border-surface-container-highest group hover:bg-surface-container-lowest transition-all">
+<div class="mb-4 flex justify-between items-center">
+<span class="text-[10px] font-bold text-slate-400">06</span>
+<span class="material-symbols-outlined text-slate-300 group-hover:text-primary" data-icon="architecture">architecture</span>
+</div>
+<h4 class="font-headline font-bold text-sm mb-1">Experiment Design</h4>
+<p class="text-[10px] text-on-surface-variant">Defining parameters.</p>
+</div>
+<!-- Agent-led Experiments -->
+<div class="bg-surface-container-low p-4 rounded-xl border border-surface-container-highest group hover:bg-surface-container-lowest transition-all">
+<div class="mb-4 flex justify-between items-center">
+<span class="text-[10px] font-bold text-slate-400">07</span>
+<span class="material-symbols-outlined text-slate-300 group-hover:text-primary" data-icon="smart_toy">smart_toy</span>
+</div>
+<h4 class="font-headline font-bold text-sm mb-1">Agent-led Run</h4>
+<p class="text-[10px] text-on-surface-variant">Parallel execution.</p>
+</div>
+<!-- Results Analysis -->
+<div class="bg-surface-container-low p-4 rounded-xl border border-surface-container-highest group hover:bg-surface-container-lowest transition-all">
+<div class="mb-4 flex justify-between items-center">
+<span class="text-[10px] font-bold text-slate-400">08</span>
+<span class="material-symbols-outlined text-slate-300 group-hover:text-primary" data-icon="bar_chart">bar_chart</span>
+</div>
+<h4 class="font-headline font-bold text-sm mb-1">Results Analysis</h4>
+<p class="text-[10px] text-on-surface-variant">Statistical validation.</p>
+</div>
+<!-- Paper Writing -->
+<div class="bg-surface-container-low p-4 rounded-xl border border-surface-container-highest group hover:bg-surface-container-lowest transition-all">
+<div class="mb-4 flex justify-between items-center">
+<span class="text-[10px] font-bold text-slate-400">09</span>
+<span class="material-symbols-outlined text-slate-300 group-hover:text-primary" data-icon="edit_note">edit_note</span>
+</div>
+<h4 class="font-headline font-bold text-sm mb-1">Paper Writing</h4>
+<p class="text-[10px] text-on-surface-variant">LaTeX drafting.</p>
+</div>
+<!-- Traceability -->
+<div class="bg-surface-container-low p-4 rounded-xl border border-surface-container-highest group hover:bg-surface-container-lowest transition-all">
+<div class="mb-4 flex justify-between items-center">
+<span class="text-[10px] font-bold text-slate-400">10</span>
+<span class="material-symbols-outlined text-slate-300 group-hover:text-primary" data-icon="verified">verified</span>
+</div>
+<h4 class="font-headline font-bold text-sm mb-1">Traceability</h4>
+<p class="text-[10px] text-on-surface-variant">Audit log finalization.</p>
+</div>
+</div>
+</div>
+</main>
+<!-- Navigation Mobile Fallback -->
+<div class="md:hidden fixed bottom-0 left-0 w-full bg-[#fbf9f5] flex justify-around p-4 border-t border-surface-container-highest z-50">
+<button class="material-symbols-outlined text-primary" data-icon="dashboard">dashboard</button>
+<button class="material-symbols-outlined text-on-surface-variant" data-icon="menu_book">menu_book</button>
+<button class="material-symbols-outlined text-on-surface-variant" data-icon="query_stats">query_stats</button>
+<button class="material-symbols-outlined text-on-surface-variant" data-icon="person">person</button>
+</div>
+</body></html>

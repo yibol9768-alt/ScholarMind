@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Manuscript Analyzer - Literature Acquisition</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary-container": "#1e40af",
+              "secondary-fixed-dim": "#b9c7df",
+              "on-tertiary-fixed-variant": "#802a00",
+              "error": "#ba1a1a",
+              "surface-container-low": "#f5f3ef",
+              "secondary-container": "#d5e3fc",
+              "surface-container-lowest": "#ffffff",
+              "on-surface-variant": "#444653",
+              "inverse-primary": "#b8c4ff",
+              "on-primary-fixed": "#001453",
+              "inverse-surface": "#30312e",
+              "tertiary-fixed": "#ffdbce",
+              "primary-fixed": "#dde1ff",
+              "tertiary-fixed-dim": "#ffb59a",
+              "on-primary-container": "#a8b8ff",
+              "on-error-container": "#93000a",
+              "error-container": "#ffdad6",
+              "background": "#fbf9f5",
+              "primary": "#00288e",
+              "surface-container": "#efeeea",
+              "on-secondary": "#ffffff",
+              "inverse-on-surface": "#f2f0ed",
+              "on-secondary-fixed": "#0d1c2e",
+              "surface-bright": "#fbf9f5",
+              "on-primary": "#ffffff",
+              "secondary-fixed": "#d5e3fc",
+              "on-background": "#1b1c1a",
+              "secondary": "#515f74",
+              "tertiary-container": "#872d00",
+              "on-surface": "#1b1c1a",
+              "on-error": "#ffffff",
+              "on-secondary-fixed-variant": "#3a485b",
+              "surface-container-highest": "#e4e2de",
+              "on-tertiary": "#ffffff",
+              "surface-dim": "#dbdad6",
+              "on-primary-fixed-variant": "#173bab",
+              "surface": "#fbf9f5",
+              "on-tertiary-container": "#ffa583",
+              "on-secondary-container": "#57657a",
+              "outline-variant": "#c4c5d5",
+              "surface-variant": "#e4e2de",
+              "surface-tint": "#3755c3",
+              "surface-container-high": "#eae8e4",
+              "primary-fixed-dim": "#b8c4ff",
+              "on-tertiary-fixed": "#380d00",
+              "tertiary": "#611e00",
+              "outline": "#757684"
+            },
+            fontFamily: {
+              "headline": ["Manrope"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+          },
+        },
+      }
+    </script>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+      body {
+        font-family: 'Inter', sans-serif;
+        background-color: #fbf9f5;
+        color: #1b1c1a;
+      }
+      h1, h2, h3, .font-manrope {
+        font-family: 'Manrope', sans-serif;
+      }
+      .glass-effect {
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(12px);
+      }
+    </style>
+</head>
+<body class="bg-surface">
+<!-- TopNavBar -->
+<header class="fixed top-0 w-full z-50 flex justify-between items-center h-16 px-8 border-b border-[#1b1c1a]/5 bg-[#fbf9f5] dark:bg-slate-950 font-manrope text-sm font-semibold tracking-tight">
+<div class="flex items-center gap-4">
+<span class="text-xl font-bold text-[#1b1c1a] dark:text-slate-100 italic">Manuscript Analyzer</span>
+</div>
+<div class="hidden md:flex items-center gap-8">
+<nav class="flex gap-6">
+<a class="text-[#1b1c1a]/60 dark:text-slate-400 hover:text-[#1e40af] transition-colors duration-200 cursor-pointer active:opacity-70">Library</a>
+<a class="text-[#1e40af] dark:text-blue-400 border-b-2 border-[#1e40af] cursor-pointer active:opacity-70">Analysis</a>
+<a class="text-[#1b1c1a]/60 dark:text-slate-400 hover:text-[#1e40af] transition-colors duration-200 cursor-pointer active:opacity-70">Archive</a>
+<a class="text-[#1b1c1a]/60 dark:text-slate-400 hover:text-[#1e40af] transition-colors duration-200 cursor-pointer active:opacity-70">Insights</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="material-symbols-outlined text-on-surface-variant cursor-pointer">notifications</div>
+<div class="material-symbols-outlined text-on-surface-variant cursor-pointer">settings</div>
+<img alt="Scholar Profile" class="w-8 h-8 rounded-full border border-outline-variant" data-alt="close-up portrait of a professional scholar with glasses in a library setting, soft natural lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBqAhNXbKepCG6O4u1_cXOW-TUABHFB9WQ4ZFJSec6RdieO5JLVKbC6HcDzakOq1Z3GfIZdHIZZnh4qOlOSUVeGsryalZG1qJ8_c9bVUxm8fXYB43hlzJz2G003ik-IOLHh-Tpdr7XYNHIeD0pVueUugR2dHmFvGTw6osT1zhC0G4fcJp1AMjsJFVu8bW6bOAbmKAW3YiWEyNR0JPz3sdgmj_7YZHY03gdGuRUg5bYavmsNN-OMA_mHQo4Jjy-gsDpOs9WnDP9Yzks"/>
+</div>
+</header>
+<!-- SideNavBar (Suppressed for transactional flow focus, but using layout structure) -->
+<div class="pt-16 min-h-screen flex">
+<!-- Main Content Area -->
+<main class="flex-1 px-8 py-12 max-w-7xl mx-auto w-full">
+<!-- Page Header -->
+<div class="mb-12">
+<h1 class="text-4xl font-extrabold tracking-tight text-on-surface mb-2">Literature Acquisition</h1>
+<p class="text-on-surface-variant max-w-2xl leading-relaxed">Select scholarly repositories and define your research parameters to begin the automated manuscript gathering process.</p>
+</div>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-12 gap-8">
+<!-- Data Source Selection (Column 1-8) -->
+<section class="col-span-12 lg:col-span-8">
+<div class="mb-6 flex justify-between items-end">
+<h2 class="text-lg font-bold text-on-surface uppercase tracking-widest font-manrope">Data Sources</h2>
+<span class="text-xs text-primary font-bold">4 Sources Available</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<!-- Source Card: arXiv -->
+<div class="p-6 rounded-xl bg-surface-container-lowest border border-outline-variant/10 hover:border-primary/30 transition-all duration-300 cursor-pointer group shadow-sm">
+<div class="flex items-start justify-between mb-4">
+<div class="w-12 h-12 rounded-lg bg-surface-container-low flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-on-primary transition-colors">
+<span class="material-symbols-outlined">menu_book</span>
+</div>
+<input checked="" class="rounded-sm border-outline text-primary focus:ring-primary" type="checkbox"/>
+</div>
+<h3 class="font-bold text-on-surface mb-1">arXiv</h3>
+<p class="text-xs text-on-surface-variant leading-tight">Physics, Mathematics, Computer Science, and Quantitative Biology.</p>
+</div>
+<!-- Source Card: PubMed -->
+<div class="p-6 rounded-xl bg-surface-container-lowest border border-outline-variant/10 hover:border-primary/30 transition-all duration-300 cursor-pointer group shadow-sm">
+<div class="flex items-start justify-between mb-4">
+<div class="w-12 h-12 rounded-lg bg-surface-container-low flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-on-primary transition-colors">
+<span class="material-symbols-outlined">medical_services</span>
+</div>
+<input checked="" class="rounded-sm border-outline text-primary focus:ring-primary" type="checkbox"/>
+</div>
+<h3 class="font-bold text-on-surface mb-1">PubMed</h3>
+<p class="text-xs text-on-surface-variant leading-tight">Biomedical and life sciences literature from MEDLINE.</p>
+</div>
+<!-- Source Card: Crossref -->
+<div class="p-6 rounded-xl bg-surface-container-lowest border border-outline-variant/10 hover:border-primary/30 transition-all duration-300 cursor-pointer group shadow-sm">
+<div class="flex items-start justify-between mb-4">
+<div class="w-12 h-12 rounded-lg bg-surface-container-low flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-on-primary transition-colors">
+<span class="material-symbols-outlined">hub</span>
+</div>
+<input class="rounded-sm border-outline text-primary focus:ring-primary" type="checkbox"/>
+</div>
+<h3 class="font-bold text-on-surface mb-1">Crossref</h3>
+<p class="text-xs text-on-surface-variant leading-tight">Global metadata registry for scholarly research and DOI resolution.</p>
+</div>
+<!-- Source Card: Semantic Scholar -->
+<div class="p-6 rounded-xl bg-surface-container-lowest border border-outline-variant/10 hover:border-primary/30 transition-all duration-300 cursor-pointer group shadow-sm">
+<div class="flex items-start justify-between mb-4">
+<div class="w-12 h-12 rounded-lg bg-surface-container-low flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-on-primary transition-colors">
+<span class="material-symbols-outlined">psychology</span>
+</div>
+<input class="rounded-sm border-outline text-primary focus:ring-primary" type="checkbox"/>
+</div>
+<h3 class="font-bold text-on-surface mb-1">Semantic Scholar</h3>
+<p class="text-xs text-on-surface-variant leading-tight">AI-driven search and discovery for over 200 million papers.</p>
+</div>
+</div>
+</section>
+<!-- Search Criteria (Column 9-12) -->
+<aside class="col-span-12 lg:col-span-4">
+<div class="bg-surface-container-low p-8 rounded-xl sticky top-24">
+<h2 class="text-lg font-bold text-on-surface uppercase tracking-widest font-manrope mb-6">Search Parameters</h2>
+<div class="space-y-6">
+<div class="space-y-1">
+<label class="text-xs font-bold text-on-surface-variant uppercase tracking-wider">Research Domain</label>
+<select class="w-full bg-surface-container-lowest border-none rounded-md text-sm py-3 px-4 focus:ring-2 focus:ring-primary/20">
+<option>Artificial Intelligence</option>
+<option>Neuroscience</option>
+<option>Molecular Biology</option>
+<option>Quantum Computing</option>
+</select>
+</div>
+<div class="space-y-1">
+<label class="text-xs font-bold text-on-surface-variant uppercase tracking-wider">Keywords</label>
+<input class="w-full bg-surface-container-lowest border-none rounded-md text-sm py-3 px-4 focus:ring-2 focus:ring-primary/20" placeholder="e.g. LLM, Transformers, Attention" type="text"/>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="space-y-1">
+<label class="text-xs font-bold text-on-surface-variant uppercase tracking-wider">Year From</label>
+<input class="w-full bg-surface-container-lowest border-none rounded-md text-sm py-3 px-4 focus:ring-2 focus:ring-primary/20" type="number" value="2020"/>
+</div>
+<div class="space-y-1">
+<label class="text-xs font-bold text-on-surface-variant uppercase tracking-wider">Year To</label>
+<input class="w-full bg-surface-container-lowest border-none rounded-md text-sm py-3 px-4 focus:ring-2 focus:ring-primary/20" type="number" value="2024"/>
+</div>
+</div>
+<button class="w-full bg-primary hover:bg-primary-container text-on-primary font-bold py-4 rounded-xl shadow-lg transition-all duration-300 flex items-center justify-center gap-2 group">
+<span class="material-symbols-outlined group-hover:rotate-12 transition-transform">cloud_download</span>
+                                Start Fetching
+                            </button>
+</div>
+</div>
+</aside>
+<!-- Progress Tracking & Results (Full Width Below) -->
+<section class="col-span-12 mt-8">
+<div class="bg-surface-container-lowest p-8 rounded-xl shadow-sm border border-outline-variant/5">
+<div class="flex items-center justify-between mb-8">
+<div>
+<h2 class="text-lg font-bold text-on-surface font-manrope">Live Acquisition</h2>
+<p class="text-sm text-on-surface-variant">Scanning sources for matching metadata...</p>
+</div>
+<div class="text-right">
+<span class="text-2xl font-black text-primary">64%</span>
+<p class="text-xs font-bold text-on-surface-variant uppercase tracking-widest">Processed</p>
+</div>
+</div>
+<!-- Progress Bar -->
+<div class="h-1.5 w-full bg-surface-container-high rounded-full overflow-hidden mb-12">
+<div class="h-full bg-primary w-[64%] rounded-full relative">
+<div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+</div>
+</div>
+<!-- Results Table -->
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="border-b border-surface-container-high">
+<th class="pb-4 text-xs font-bold text-on-surface-variant uppercase tracking-widest px-4">Status</th>
+<th class="pb-4 text-xs font-bold text-on-surface-variant uppercase tracking-widest px-4">Paper Title</th>
+<th class="pb-4 text-xs font-bold text-on-surface-variant uppercase tracking-widest px-4">Source</th>
+<th class="pb-4 text-xs font-bold text-on-surface-variant uppercase tracking-widest px-4 text-right">Year</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container-low">
+<tr class="hover:bg-surface-container-low/50 transition-colors group">
+<td class="py-5 px-4">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-secondary-container text-on-secondary-container uppercase">Fetched</span>
+</td>
+<td class="py-5 px-4 font-medium text-on-surface text-sm max-w-md truncate">Attention Is All You Need: Scaling Large Language Models</td>
+<td class="py-5 px-4 text-sm text-on-surface-variant">arXiv</td>
+<td class="py-5 px-4 text-sm text-on-surface-variant text-right tabular-nums">2023</td>
+</tr>
+<tr class="hover:bg-surface-container-low/50 transition-colors group">
+<td class="py-5 px-4">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-secondary-container text-on-secondary-container uppercase">Fetched</span>
+</td>
+<td class="py-5 px-4 font-medium text-on-surface text-sm max-w-md truncate">Biological Neuronal Models vs Artificial Attention Mechanisms</td>
+<td class="py-5 px-4 text-sm text-on-surface-variant">PubMed</td>
+<td class="py-5 px-4 text-sm text-on-surface-variant text-right tabular-nums">2024</td>
+</tr>
+<tr class="hover:bg-surface-container-low/50 transition-colors group">
+<td class="py-5 px-4">
+<div class="flex items-center gap-2">
+<div class="w-3 h-3 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+<span class="text-[10px] font-bold text-primary uppercase">Parsing</span>
+</div>
+</td>
+<td class="py-5 px-4 font-medium text-on-surface text-sm max-w-md truncate opacity-60">Deep Reinforcement Learning in Clinical Diagnostic Support</td>
+<td class="py-5 px-4 text-sm text-on-surface-variant opacity-60">Crossref</td>
+<td class="py-5 px-4 text-sm text-on-surface-variant text-right tabular-nums opacity-60">2022</td>
+</tr>
+<tr class="hover:bg-surface-container-low/50 transition-colors group">
+<td class="py-5 px-4">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-surface-container-high text-on-surface-variant uppercase">Queued</span>
+</td>
+<td class="py-5 px-4 font-medium text-on-surface text-sm max-w-md truncate opacity-40">The Future of Scholarly Communication in the AI Era</td>
+<td class="py-5 px-4 text-sm text-on-surface-variant opacity-40">Semantic Scholar</td>
+<td class="py-5 px-4 text-sm text-on-surface-variant text-right tabular-nums opacity-40">2024</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+</div>
+</main>
+</div>
+<!-- Bottom Action Bar -->
+<footer class="fixed bottom-0 w-full glass-effect border-t border-outline-variant/10 z-50">
+<div class="max-w-7xl mx-auto px-8 h-20 flex items-center justify-between">
+<button class="flex items-center gap-2 text-on-surface-variant hover:text-on-surface font-bold text-sm transition-colors group">
+<span class="material-symbols-outlined group-hover:-translate-x-1 transition-transform">arrow_back</span>
+                Back to Dashboard
+            </button>
+<div class="flex items-center gap-6">
+<span class="text-xs text-on-surface-variant font-medium">Selected: <strong class="text-primary">12 Papers</strong></span>
+<button class="bg-primary hover:bg-primary-container text-on-primary px-8 py-3 rounded-xl font-bold text-sm shadow-md flex items-center gap-2 transition-all">
+                    Next: Key Information Extraction
+                    <span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+</div>
+</footer>
+</body></html>

@@ -1,0 +1,1 @@
+"""ScholarMind desktop prototype package."""
