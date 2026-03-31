@@ -360,52 +360,55 @@ Target length: {guide['word_target']}
         return section_latex
 
     async def _coherence_pass(self, sections: dict, title: str) -> dict:
-        """Stage C: 跨节一致性检查"""
-        full_draft = "\n\n".join(f"% === {name} ===\n{latex}" for name, latex in sections.items())
-
-        prompt = f"""You are reviewing a paper draft for internal consistency. The paper title is: "{title}"
-
-Here is the full draft:
-{full_draft[:12000]}
-
-Check and fix:
-1. Notation consistency: ensure the same symbols are used for the same concepts across sections
-2. Terminology consistency: same terms for the same concepts
-3. No contradictions between sections (e.g., claims in intro must match results)
-4. Smooth transitions between sections
-5. No repeated content across sections
-6. All figures/tables referenced in text exist and are referenced correctly
-
-For each section, output the CORRECTED LaTeX. Format:
-
-===SECTION: Abstract===
-(corrected LaTeX)
-===SECTION: Introduction===
-(corrected LaTeX)
-... etc for all sections ..."""
-
-        result, _ = await call_llm(
-            prompt,
-            system="You are a meticulous academic editor. Fix inconsistencies while preserving content.",
-            max_tokens=8000,
-            temperature=0.2,
-        )
-
-        # 解析修正后的各节
+        """Stage C: 跨节一致性检查 — 逐节修正，不合并"""
         updated = {}
-        for section_name in sections.keys():
-            marker = f"===SECTION: {section_name}==="
-            if marker in result:
-                start = result.index(marker) + len(marker)
-                # 找下一个 marker 或结尾
-                next_markers = [result.index(f"===SECTION: {s}===")
-                                for s in sections.keys()
-                                if f"===SECTION: {s}===" in result and
-                                result.index(f"===SECTION: {s}===") > start]
-                end = min(next_markers) if next_markers else len(result)
-                updated[section_name] = result[start:end].strip()
+        all_section_names = list(sections.keys())
+
+        for section_name, latex in sections.items():
+            # 给LLM看其他节的摘要（不是全文），只修正当前节
+            other_sections_summary = "\n".join(
+                f"[{name}]: {content[:300]}..."
+                for name, content in sections.items()
+                if name != section_name
+            )
+
+            prompt = f"""You are editing ONLY the {section_name} section of a paper titled "{title}".
+
+Other sections (for context, DO NOT rewrite these):
+{other_sections_summary}
+
+Current {section_name} section to review and fix:
+{latex}
+
+Fix ONLY these issues in the {section_name} section:
+1. Ensure notation is consistent with other sections
+2. Fix any LaTeX syntax errors (unclosed environments, wrong commands)
+3. Remove any placeholder text (TODO, TBD, etc.)
+4. Ensure the section starts with the correct header (\\section{{{section_name}}} or \\begin{{abstract}})
+
+Output ONLY the corrected {section_name} section LaTeX. Do NOT include other sections.
+Do NOT remove or merge content. Keep all existing content."""
+
+            result, _ = await call_llm(
+                prompt,
+                system="You are a LaTeX editor. Fix only the specified section. Preserve all content.",
+                max_tokens=6000,
+                temperature=0.2,
+            )
+
+            result = result.strip()
+            if result.startswith("```"):
+                result = "\n".join(result.split("\n")[1:])
+            if result.endswith("```"):
+                result = result[:-3].rstrip()
+
+            # 只接受修正结果如果它仍然包含正确的节头
+            section_header = f"\\section{{{section_name}}}" if section_name != "Abstract" else "\\begin{abstract}"
+            if section_header in result or len(result) > len(latex) * 0.5:
+                updated[section_name] = result
             else:
-                updated[section_name] = sections[section_name]
+                # 修正结果太短或丢失节头，保留原始
+                updated[section_name] = latex
 
         return updated
 
@@ -485,75 +488,64 @@ For each section, output the CORRECTED LaTeX. Format:
         return bib_entries, sections
 
     async def _quality_audit(self, sections: dict, round_num: int) -> tuple[dict, list]:
-        """Stage E: 质量审计"""
-        issues_found = []
+        """Stage E: 质量审计 — 逐节检查并修复"""
+        all_issues = []
 
-        full_draft = "\n\n".join(f"% {name}\n{latex}" for name, latex in sections.items())
+        for section_name, latex in sections.items():
+            issues = []
 
-        # 1. 检测 AI 废话
-        for phrase in AI_SLOP_PHRASES:
-            if phrase.lower() in full_draft.lower():
-                issues_found.append(f"AI slop: '{phrase}'")
+            # 1. 检测 AI 废话
+            for phrase in AI_SLOP_PHRASES:
+                if phrase.lower() in latex.lower():
+                    issues.append(f"AI slop: '{phrase}'")
 
-        # 2. 检查 LaTeX 常见错误
-        # 未闭合的环境
-        for env in ["figure", "table", "equation", "itemize", "enumerate", "abstract"]:
-            begins = len(re.findall(rf"\\begin\{{{env}\}}", full_draft))
-            ends = len(re.findall(rf"\\end\{{{env}\}}", full_draft))
-            if begins != ends:
-                issues_found.append(f"Unclosed environment: {env} ({begins} begins, {ends} ends)")
+            # 2. 检查 LaTeX 错误
+            for env in ["figure", "table", "equation", "itemize", "enumerate"]:
+                begins = len(re.findall(rf"\\begin\{{{env}\}}", latex))
+                ends = len(re.findall(rf"\\end\{{{env}\}}", latex))
+                if begins != ends:
+                    issues.append(f"Unclosed {env} ({begins} vs {ends})")
 
-        # 3. 检查占位符
-        placeholders = re.findall(r"TODO|PLACEHOLDER|TBD|XXX|\[INSERT\]|\[FILL\]", full_draft, re.IGNORECASE)
-        if placeholders:
-            issues_found.append(f"Placeholders found: {placeholders[:5]}")
+            # 3. 占位符
+            placeholders = re.findall(r"TODO|PLACEHOLDER|TBD|XXX|\[INSERT\]|\[FILL\]", latex, re.IGNORECASE)
+            if placeholders:
+                issues.append(f"Placeholders: {placeholders[:3]}")
 
-        if not issues_found:
-            return sections, []
+            if not issues:
+                continue
 
-        # 4. 让 LLM 修复
-        issues_str = "\n".join(f"- {issue}" for issue in issues_found)
-        prompt = f"""Fix the following issues in this LaTeX paper draft (audit round {round_num+1}):
+            all_issues.extend(issues)
 
-Issues found:
+            # 修复当前节
+            issues_str = "\n".join(f"- {i}" for i in issues)
+            prompt = f"""Fix these issues in the {section_name} section (audit round {round_num+1}):
+
 {issues_str}
 
-Additional instructions:
-- Replace any AI-sounding filler phrases with concrete, specific statements
-- Fix any unclosed LaTeX environments
-- Replace any placeholders with appropriate content
-- Ensure all numbers match the experiment data
+Replace AI filler phrases with concrete statements. Fix LaTeX errors. Remove placeholders.
 
-Draft:
-{full_draft[:10000]}
+Section content:
+{latex}
 
-Output the corrected sections in the same format:
-===SECTION: SectionName===
-(corrected LaTeX)
-... for each section ..."""
+Output ONLY the corrected {section_name} section. Keep the section header."""
 
-        result, _ = await call_llm(
-            prompt,
-            system="You are an academic editor. Fix the listed issues. Be precise and minimal in changes.",
-            max_tokens=8000,
-            temperature=0.2,
-        )
+            result, _ = await call_llm(
+                prompt,
+                system="You are a LaTeX editor. Make minimal fixes. Do not remove content.",
+                max_tokens=6000,
+                temperature=0.2,
+            )
 
-        # 解析
-        for section_name in sections.keys():
-            marker = f"===SECTION: {section_name}==="
-            if marker in result:
-                start = result.index(marker) + len(marker)
-                next_markers = [result.index(f"===SECTION: {s}===")
-                                for s in sections.keys()
-                                if f"===SECTION: {s}===" in result and
-                                result.index(f"===SECTION: {s}===") > start]
-                end = min(next_markers) if next_markers else len(result)
-                fixed = result[start:end].strip()
-                if len(fixed) > 100:  # 避免空修复
-                    sections[section_name] = fixed
+            result = result.strip()
+            if result.startswith("```"):
+                result = "\n".join(result.split("\n")[1:])
+            if result.endswith("```"):
+                result = result[:-3].rstrip()
 
-        return sections, issues_found
+            if len(result) > len(latex) * 0.5:
+                sections[section_name] = result
+
+        return sections, all_issues
 
     def _assemble_paper(self, title: str, sections: dict, bib_entries: list) -> str:
         """组装完整 LaTeX 文档"""
