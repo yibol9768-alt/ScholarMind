@@ -28,6 +28,20 @@ SERPER_API_KEY = os.getenv("SERPER_API_KEY", "")  # Google搜索
 TAVILY_API_KEY = os.getenv("TAVILY_API_KEY", "")  # Tavily搜索
 BRAVE_API_KEY = os.getenv("BRAVE_API_KEY", "")    # Brave搜索
 
+# ── GPT API (图片生成 + 实验数据生成) ──
+GPT_API_KEY = os.getenv("GPT_API_KEY", "")
+GPT_API_BASE = os.getenv("GPT_API_BASE", "https://api.gptsapi.net/v1")
+
+# ── SSH 远程 GPU 服务器 ──
+SSH_HOST = os.getenv("SSH_HOST", "")              # GPU服务器地址
+SSH_PORT = int(os.getenv("SSH_PORT", "22"))
+SSH_USER = os.getenv("SSH_USER", "")
+SSH_KEY_PATH = os.getenv("SSH_KEY_PATH", "")      # SSH私钥路径
+SSH_PASSWORD = os.getenv("SSH_PASSWORD", "")       # 或密码
+SSH_WORK_DIR = os.getenv("SSH_WORK_DIR", "/tmp/scholarmind")  # 远程工作目录
+SSH_CONDA_ENV = os.getenv("SSH_CONDA_ENV", "")    # conda环境名
+SSH_ENABLED = bool(SSH_HOST and SSH_USER)
+
 # ── 数据库 ────────────────────────────────────────────
 DATABASE_URL = os.getenv("DATABASE_URL", f"sqlite+aiosqlite:///{BASE_DIR / 'research.db'}")
 

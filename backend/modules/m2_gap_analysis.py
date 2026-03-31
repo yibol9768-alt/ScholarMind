@@ -182,10 +182,10 @@ Be realistic on ratings (1-10). Make sure ideas are concrete and implementable."
             from paperqa import Docs, Settings
 
             # 配置 PaperQA 使用智谱AI
+            # embedding 用 litellm 支持的格式，或留空用默认
             settings = Settings(
                 llm=f"openai/{config.OPENAI_MODEL}",
                 summary_llm=f"openai/{config.OPENAI_MODEL}",
-                embedding="sentence-transformers/all-MiniLM-L6-v2",
             )
 
             # 设置 OpenAI 兼容环境变量
@@ -267,30 +267,131 @@ Be realistic on ratings (1-10). Make sure ideas are concrete and implementable."
         return answers
 
     def _generate_base_experiment(self, topic, domain):
-        """生成基础实验模板"""
+        """生成真实实验模板 — 使用 HuggingFace datasets + sklearn/torch"""
         return f'''"""
 Baseline experiment for: {topic}
 Domain: {domain}
+
+This is a REAL experiment template that:
+1. Loads a real dataset from HuggingFace or sklearn
+2. Trains a real model
+3. Evaluates with real metrics
+4. AI-Scientist will modify this to implement research ideas
 """
 import argparse
 import json
 import os
 import numpy as np
 import time
+from collections import Counter
+
+def load_dataset_safe():
+    """Load a real dataset. Try HuggingFace first, fallback to sklearn."""
+    # Try HuggingFace datasets
+    try:
+        from datasets import load_dataset
+        ds = load_dataset("ag_news", split="train[:2000]")
+        texts = ds["text"]
+        labels = ds["label"]
+        return texts, labels, "ag_news"
+    except Exception:
+        pass
+
+    # Fallback to sklearn
+    try:
+        from sklearn.datasets import fetch_20newsgroups
+        data = fetch_20newsgroups(subset="train", categories=["sci.med", "sci.space", "comp.graphics", "rec.sport.baseball"],
+                                  remove=("headers", "footers", "quotes"))
+        return data.data[:2000], data.target[:2000].tolist(), "20newsgroups"
+    except Exception:
+        pass
+
+    # Last resort: generate synthetic but structured data
+    np.random.seed(42)
+    n = 1000
+    texts = [f"sample text {{i}} with features" for i in range(n)]
+    labels = [i % 4 for i in range(n)]
+    return texts, labels, "synthetic"
+
+def extract_features(texts, max_features=5000):
+    """Simple TF-IDF-like feature extraction."""
+    # Build vocabulary
+    word_counts = Counter()
+    for text in texts:
+        words = text.lower().split()
+        word_counts.update(words)
+
+    vocab = {{w: i for i, (w, _) in enumerate(word_counts.most_common(max_features))}}
+
+    # Convert to bag-of-words
+    features = np.zeros((len(texts), len(vocab)), dtype=np.float32)
+    for i, text in enumerate(texts):
+        words = text.lower().split()
+        for w in words:
+            if w in vocab:
+                features[i, vocab[w]] += 1
+        # L2 normalize
+        norm = np.linalg.norm(features[i])
+        if norm > 0:
+            features[i] /= norm
+
+    return features
+
+def train_and_evaluate(X_train, y_train, X_test, y_test):
+    """Train a real classifier and evaluate."""
+    try:
+        from sklearn.linear_model import LogisticRegression
+        from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
+
+        model = LogisticRegression(max_iter=200, C=1.0, random_state=42)
+        model.fit(X_train, y_train)
+        y_pred = model.predict(X_test)
+
+        return {{
+            "accuracy": accuracy_score(y_test, y_pred),
+            "f1": f1_score(y_test, y_pred, average="weighted"),
+            "precision": precision_score(y_test, y_pred, average="weighted"),
+            "recall": recall_score(y_test, y_pred, average="weighted"),
+        }}
+    except ImportError:
+        # Manual accuracy calculation without sklearn
+        correct = sum(1 for a, b in zip(y_test, y_pred) if a == b)
+        return {{"accuracy": correct / len(y_test), "f1": 0.0, "precision": 0.0, "recall": 0.0}}
 
 def run_experiment(args):
+    """Run the baseline experiment with real data."""
     results = {{}}
     start_time = time.time()
     np.random.seed(args.seed)
 
-    accuracy = np.random.uniform(0.6, 0.8)
-    f1_score = np.random.uniform(0.55, 0.75)
-    loss = np.random.uniform(0.3, 0.6)
+    # Load real data
+    texts, labels, dataset_name = load_dataset_safe()
+    print(f"Dataset: {{dataset_name}}, samples: {{len(texts)}}")
 
-    results["baseline_accuracy"] = {{"means": float(accuracy), "stds": 0.02}}
-    results["baseline_f1"] = {{"means": float(f1_score), "stds": 0.03}}
-    results["baseline_loss"] = {{"means": float(loss), "stds": 0.05}}
-    results["runtime"] = {{"means": time.time() - start_time, "stds": 0.0}}
+    # Feature extraction
+    features = extract_features(texts)
+    print(f"Features shape: {{features.shape}}")
+
+    # Train/test split (80/20)
+    n = len(texts)
+    split = int(n * 0.8)
+    indices = np.random.permutation(n)
+    X_train, X_test = features[indices[:split]], features[indices[split:]]
+    y_train = [labels[i] for i in indices[:split]]
+    y_test = [labels[i] for i in indices[split:]]
+
+    # Train and evaluate
+    metrics = train_and_evaluate(X_train, y_train, X_test, y_test)
+    runtime = time.time() - start_time
+
+    # Save in AI-Scientist format
+    for k, v in metrics.items():
+        results[f"baseline_{{k}}"] = {{"means": float(v), "stds": 0.0}}
+    results["runtime"] = {{"means": runtime, "stds": 0.0}}
+    results["dataset"] = {{"means": len(texts), "stds": 0.0}}
+
+    print(f"Results: {{metrics}}")
+    print(f"Runtime: {{runtime:.2f}}s")
     return results
 
 if __name__ == "__main__":
@@ -302,5 +403,5 @@ if __name__ == "__main__":
     results = run_experiment(args)
     with open(os.path.join(args.out_dir, "final_info.json"), "w") as f:
         json.dump(results, f, indent=2)
-    print("Experiment completed. Results:", results)
+    print(f"Results saved to {{args.out_dir}}/final_info.json")
 '''

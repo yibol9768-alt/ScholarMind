@@ -95,13 +95,15 @@ class PipelineOrchestrator:
 
                 await self.state.wait_if_paused()
 
-                progress = (i - 1) / 9 * 100
-                await self.state.set_progress(i, mod.name, progress)
+                # 设置初始进度 (每个模块占 ~11%)
+                await self.state.set_progress(i, mod.name, 10)
                 await self.tracer.log(i, "start", f"开始 {mod.name}")
                 self.tracer.step_start()
 
                 context = await mod.execute(context, self.tracer, self.state)
 
+                # 模块完成后设进度为 100
+                await self.state.set_progress(i, mod.name, 100)
                 await self.tracer.log(i, "done", f"{mod.name} 完成",
                                       duration_ms=self.tracer.step_elapsed_ms())
 
@@ -119,12 +121,13 @@ class PipelineOrchestrator:
 
                 # M7: 结果分析
                 mod7 = self.modules[6]
-                await self.state.set_progress(7, mod7.name, 66)
+                await self.state.set_progress(7, mod7.name, 10)
                 await self.tracer.log(7, "start", f"开始 {mod7.name}")
                 self.tracer.step_start()
 
                 context = await mod7.execute(context, self.tracer, self.state)
 
+                await self.state.set_progress(7, mod7.name, 100)
                 await self.tracer.log(7, "done", f"{mod7.name} 完成",
                                       duration_ms=self.tracer.step_elapsed_ms())
 
@@ -151,20 +154,22 @@ class PipelineOrchestrator:
             # M8: 论文写作
             if not self.state.is_aborted:
                 mod8 = self.modules[7]
-                await self.state.set_progress(8, mod8.name, 78)
+                await self.state.set_progress(8, mod8.name, 10)
                 await self.tracer.log(8, "start", f"开始 {mod8.name}")
                 self.tracer.step_start()
                 context = await mod8.execute(context, self.tracer, self.state)
+                await self.state.set_progress(8, mod8.name, 100)
                 await self.tracer.log(8, "done", f"{mod8.name} 完成",
                                       duration_ms=self.tracer.step_elapsed_ms())
 
             # M9: 评审打分
             if not self.state.is_aborted:
                 mod9 = self.modules[8]
-                await self.state.set_progress(9, mod9.name, 89)
+                await self.state.set_progress(9, mod9.name, 10)
                 await self.tracer.log(9, "start", f"开始 {mod9.name}")
                 self.tracer.step_start()
                 context = await mod9.execute(context, self.tracer, self.state)
+                await self.state.set_progress(9, mod9.name, 100)
                 await self.tracer.log(9, "done", f"{mod9.name} 完成",
                                       duration_ms=self.tracer.step_elapsed_ms())
 

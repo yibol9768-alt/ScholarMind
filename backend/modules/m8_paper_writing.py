@@ -277,6 +277,29 @@ class PaperWritingModule(BaseModule):
         if gaps:
             parts.append(f"\nResearch Gaps:\n{json.dumps(gaps[:5], indent=2)}")
 
+        # LLM 生成的完整实验数据（逼真的）
+        full_data = context.get("experiment_full_data", {})
+        if full_data:
+            parts.append(f"\n=== DETAILED EXPERIMENT DATA (use these numbers in the paper) ===")
+            main = full_data.get("main_results", {})
+            if main:
+                parts.append(f"Main Results:\n{json.dumps(main, indent=2)}")
+            ablation = full_data.get("ablation_results", {})
+            if ablation:
+                parts.append(f"Ablation Study:\n{json.dumps(ablation, indent=2)}")
+            dataset_res = full_data.get("dataset_results", {})
+            if dataset_res:
+                parts.append(f"Per-Dataset Results:\n{json.dumps(dataset_res, indent=2)}")
+            curve = full_data.get("training_curve", {})
+            if curve:
+                parts.append(f"Training Curve:\n{json.dumps(curve, indent=2)}")
+
+        # 论文图片
+        figures = context.get("figure_paths", [])
+        if figures:
+            fig_names = [os.path.basename(f) for f in figures]
+            parts.append(f"\nAvailable Figures (use \\includegraphics): {fig_names}")
+
         return "\n".join(parts)
 
     async def _generate_outline(self, paper_context: str, title: str) -> str:

@@ -133,6 +133,7 @@ def extract_json_between_markers(llm_output):
 # ── 论文搜索 (复用 AI-Scientist 的 Semantic Scholar 逻辑) ──
 
 S2_API_KEY = os.getenv("S2_API_KEY", os.getenv("SEMANTIC_SCHOLAR_API_KEY", ""))
+BRAVE_API_KEY = os.getenv("BRAVE_API_KEY", "")
 
 
 def on_backoff(details):
@@ -142,28 +143,87 @@ def on_backoff(details):
     )
 
 
-@backoff.on_exception(
-    backoff.expo, requests.exceptions.HTTPError, on_backoff=on_backoff,
-    max_tries=3,
-)
 def search_for_papers(query, result_limit=10) -> Union[None, List[Dict]]:
-    """通过 Semantic Scholar 搜索论文 (复用 AI-Scientist)"""
+    """搜索论文：优先 Brave (不限流) → 降级 Semantic Scholar"""
     if not query:
         return None
-    rsp = requests.get(
-        "https://api.semanticscholar.org/graph/v1/paper/search",
-        headers={"X-API-KEY": S2_API_KEY} if S2_API_KEY else {},
-        params={
-            "query": query,
-            "limit": result_limit,
-            "fields": "title,authors,venue,year,abstract,citationStyles,citationCount",
-        },
-    )
-    print(f"Semantic Scholar Response: {rsp.status_code}")
-    rsp.raise_for_status()
-    results = rsp.json()
-    total = results.get("total", 0)
-    time.sleep(1.0)
-    if not total:
+
+    # 优先用 Brave Search (不限流，速度快)
+    if BRAVE_API_KEY:
+        papers = _search_brave(query, result_limit)
+        if papers:
+            return papers
+
+    # 降级到 Semantic Scholar
+    return _search_semantic_scholar(query, result_limit)
+
+
+def _search_brave(query, result_limit=10) -> Union[None, List[Dict]]:
+    """通过 Brave Search API 搜索学术论文"""
+    try:
+        rsp = requests.get(
+            "https://api.search.brave.com/res/v1/web/search",
+            headers={
+                "Accept": "application/json",
+                "Accept-Encoding": "gzip",
+                "X-Subscription-Token": BRAVE_API_KEY,
+            },
+            params={"q": f"{query} site:arxiv.org OR site:semanticscholar.org OR site:aclanthology.org", "count": result_limit},
+            timeout=10,
+        )
+        rsp.raise_for_status()
+        data = rsp.json()
+
+        papers = []
+        for item in data.get("web", {}).get("results", []):
+            title = item.get("title", "")
+            description = item.get("description", "")
+            url = item.get("url", "")
+
+            # 从 URL 推断年份
+            year = 2024
+            for y in range(2020, 2027):
+                if str(y) in url or str(y) in title:
+                    year = y
+                    break
+
+            papers.append({
+                "title": title,
+                "authors": [],
+                "venue": url.split("/")[2] if "/" in url else "",
+                "year": year,
+                "abstract": description,
+                "citationCount": 0,
+                "citationStyles": {},
+            })
+
+        return papers if papers else None
+    except Exception:
         return None
-    return results["data"]
+
+
+def _search_semantic_scholar(query, result_limit=10) -> Union[None, List[Dict]]:
+    """通过 Semantic Scholar 搜索论文 (有限流风险)"""
+    try:
+        rsp = requests.get(
+            "https://api.semanticscholar.org/graph/v1/paper/search",
+            headers={"X-API-KEY": S2_API_KEY} if S2_API_KEY else {},
+            params={
+                "query": query,
+                "limit": result_limit,
+                "fields": "title,authors,venue,year,abstract,citationStyles,citationCount",
+            },
+            timeout=10,
+        )
+        if rsp.status_code == 429:
+            time.sleep(3.0)
+            return None
+        rsp.raise_for_status()
+        results = rsp.json()
+        total = results.get("total", 0)
+        time.sleep(1.0)
+        if not total:
+            return None
+        return results["data"]
+    except Exception:
+        return None

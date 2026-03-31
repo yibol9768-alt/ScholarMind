@@ -30,7 +30,7 @@ async function request<T>(url: string, options?: RequestInit): Promise<T> {
   try {
     const res = await fetch(`${BASE_URL}${url}`, {
       headers: { 'Content-Type': 'application/json' },
-      signal: AbortSignal.timeout(3000),
+      signal: AbortSignal.timeout(15000),
       ...options,
     });
     if (!res.ok) {
@@ -39,9 +39,12 @@ async function request<T>(url: string, options?: RequestInit): Promise<T> {
     }
     demoMode = false;
     return res.json();
-  } catch {
-    // 后端不可用，切换到 Demo 模式
-    demoMode = true;
+  } catch (e) {
+    // 区分网络错误和业务错误
+    if (e instanceof TypeError || (e instanceof DOMException && e.name === 'AbortError')) {
+      // 真正的网络/超时错误才切 demo
+      demoMode = true;
+    }
     throw new Error('DEMO_MODE');
   }
 }

@@ -352,6 +352,33 @@ async def serve_file(task_id: str, file_path: str):
     return FileResponse(full_path)
 
 
+# ── SSH 配置与测试 ────────────────────────────────────
+
+@router.get("/ssh/status")
+async def ssh_status():
+    """检查 SSH 配置状态"""
+    from modules.ssh_runner import ssh_runner
+    return {
+        "enabled": ssh_runner.is_available(),
+        "host": config.SSH_HOST or None,
+        "user": config.SSH_USER or None,
+        "work_dir": config.SSH_WORK_DIR,
+    }
+
+
+@router.post("/ssh/test")
+async def ssh_test():
+    """测试 SSH 连接"""
+    from modules.ssh_runner import ssh_runner
+    if not ssh_runner.is_available():
+        raise HTTPException(400, "SSH 未配置。请在 .env 中设置 SSH_HOST 和 SSH_USER")
+    try:
+        gpu_info = await ssh_runner.check_gpu()
+        return {"ok": True, "gpu": gpu_info}
+    except Exception as e:
+        raise HTTPException(500, f"SSH 连接失败: {e}")
+
+
 # ── WebSocket ─────────────────────────────────────────
 
 @router.websocket("/ws")

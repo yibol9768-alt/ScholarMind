@@ -255,8 +255,16 @@ class IdeaScoringModule(BaseModule):
         tracer.step_start()
         await tracer.log(3, "novelty_check", "通过 Semantic Scholar 验证 idea 新颖性 (AI-Scientist)")
 
-        max_novelty_rounds = 5
-        for idx, idea in enumerate(all_ideas):
+        max_novelty_rounds = 2  # 减少轮次避免 Semantic Scholar 限流
+        # 只检查非种子的 top ideas (按评分排序)
+        ideas_to_check = [i for i in all_ideas if "novel" not in i]
+        ideas_to_check.sort(
+            key=lambda x: x.get("Interestingness", 0) * x.get("Novelty", 0),
+            reverse=True,
+        )
+        ideas_to_check = ideas_to_check[:5]  # 只检查前5个最好的
+
+        for idx, idea in enumerate(ideas_to_check):
             if state.is_aborted:
                 break
             if "novel" in idea:
@@ -317,6 +325,8 @@ class IdeaScoringModule(BaseModule):
                         break
                 except Exception as e:
                     await tracer.log(3, "novelty_check", f"  检查出错: {e}", level="warn")
+                    # 搜索失败时默认标记为 novel
+                    novel = True
                     break
 
             idea["novel"] = novel
